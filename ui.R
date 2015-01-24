@@ -8,7 +8,7 @@ names(EXPS) <- EXPS  # to be used in selectInput("Experiment"...) bellow
 shinyUI(fluidPage(
   
   title="View growth curves and calculate growth rate",
-  plotOutput('Plot', height = 800),
+  plotOutput('Plot', height = 800, width = 1000),
   hr(),
   
   fluidRow(

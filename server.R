@@ -31,6 +31,7 @@ shinyServer(function(input, output, session) {
       theme_bw() +
       scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x),
                     labels = trans_format("log10", math_format(10^.x))) #+
+    #  coord_fixed() #+
       #theme(axis.ticks = element_blank(), axis.text.x = element_blank())
   
   return(plGrowCurv)
