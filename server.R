@@ -6,33 +6,42 @@ library(scales)
 
 shinyServer(function(input, output, session) {
   
-  # read the experiment data sheet and make data frame
-  which.experiment <- reactive({
+  # read the experiment data and subset based on input
+  # clunky still
+  whatToPlot <- reactive({
     data <- read.csv(input$Experiment, header=T, sep=',', quote='"')
-    df <- data.frame(data)
+    data <- mutate(data, Rep=factor(Replicate))
+    
+    df <- data[data$Strain==input$Strain[1] |
+                     data$Strain==input$Strain[2] |
+                     data$Strain==input$Strain[3] |
+                     data$Strain==input$Strain[4] |
+                     data$Strain==input$Strain[5] ,]
+    
+#    df <- df[df$Treatment==input$Treatment[1] |
+#               df$Treatment==input$Treatment[2] |
+#               df$Treatment==input$Treatment[3] |
+#               df$Treatment==input$Treatment[4] |
+#               df$Treatment==input$Treatment[5] ,]
+    
+    df <- df[which(df$Day >= input$Day[1] & df$Day <= input$Day[2]),]
     return(df) 
   })
-    
+  
   # plot the entire data frame as RF by Day
   pl1 <- reactive ({
-    DAT <- mutate(which.experiment(),
-                  Rep=as.factor(Replicate))
-    
-    plGrowCurv <- ggplot(data=DAT,
+    plGrowCurv <- ggplot(data=whatToPlot(),
                          aes(x=Day, y=RF-Rfctrl, ymax=max(RF)*1.05,
                          group=Rep, shape=Rep, 
                          colour=Rep, linetype=Rep)) +
-      geom_line(size=0.3) +
-      geom_point(size=1) + #position=position_dodge(width=0.5, height=0)) +
-      #   scale_x_discrete(breaks=MIN:MAX, labels=MIN:MAX) +
-      xlab("Day") +  ylab("log10 RFU") +
-      xlim(min(DAT$Day), max(DAT$Day)) +
-      facet_grid(Strain ~ Treatment) +
-      theme_bw() +
-      scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x),
-                    labels = trans_format("log10", math_format(10^.x))) #+
-    #  coord_fixed() #+
-      #theme(axis.ticks = element_blank(), axis.text.x = element_blank())
+                    geom_line(size=0.5) +
+                    geom_point(size=2) +
+                    xlab("Day") +  ylab("log10 RFU") +
+                    facet_grid(Strain ~ Treatment) +
+                    theme_bw() +
+                    scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x),
+                                  labels = trans_format("log10", math_format(10^.x))) #+
+                  #  coord_fixed() #+
   
   return(plGrowCurv)
   })
