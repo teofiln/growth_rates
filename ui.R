@@ -5,7 +5,8 @@ library(shinythemes)
 #get a named list of the active experiments 
 EXPS <- as.list(dir(pattern="MAIN.csv"))
 names(EXPS) <- EXPS  # to be used in selectInput("Experiment"...) bellow
-dataset <- read.csv(as.character(EXPS), header=TRUE)
+data <- read.csv(as.character(EXPS), header=TRUE)
+data <- mutate(data, Rep=factor(Replicate), Transfer=as.numeric(Transfer), Treatment=factor(Treatment))
 
 shinyUI(fluidPage(theme = shinytheme("flatly"),
   
@@ -14,24 +15,30 @@ shinyUI(fluidPage(theme = shinytheme("flatly"),
   hr(),
   
   fluidRow(
-    column(3,
+    column(2,
       selectInput("Experiment", 
-                  label = h3("Choose experiment"),
+                  label = h3("Experiment"),
                   choices = EXPS, selected = EXPS[1] ) ),
-    column(3,
+    column(2,
            checkboxGroupInput("Strain", 
-                       label = h3("Choose Strain"),
-                       choices = levels(dataset$Strain), selected = levels(dataset$Strain)[1]) ),
-   # column(3,
-    #       checkboxGroupInput("Treatment", 
-     #                         label = h3("Choose Treatment"),
-      #                        choices = levels(dataset$Treatment), selected = levels(dataset$Treatment)[1]) ),
-    column(3,
-           sliderInput("Day", label = h3("Day Range"), 
-                       min = min(dataset$Day), 
-                       max = max(dataset$Day), 
-                       value = c(30, 45),
-                       ticks=TRUE, animate=TRUE))
+                       label = h3("Strain"),
+                       choices = levels(data$Strain), selected = levels(data$Strain)[1:5]) ),
+    column(2,
+           checkboxGroupInput("Treatment", 
+                              label = h3("Treatment"),
+                              choices = levels(data$Treatment), selected = levels(data$Treatment)[1:5]) ),
+  #  column(3,
+  #         sliderInput("Day", label = h3("Day Range"), 
+  #                     min = min(data$Day), 
+  #                     max = max(data$Day), 
+  #                     value = c(min(data$Day), max(data$Day)),
+  #                     ticks=TRUE, animate=TRUE)),
+   column(3,
+          sliderInput("Transfer", label = h3("Transfer Range"), 
+                      min = min(data$Transfer), 
+                      max = max(data$Transfer), 
+                      value = c(min(data$Transfer), max(data$Transfer)),
+                      ticks=TRUE, animate=TRUE))
   )
 
   ))
