@@ -1,6 +1,9 @@
 library(shiny)
 library(ggplot2)
-library(shinythemes)
+library(gridExtra)
+library(plyr)
+library(scales)
+library(HH)
 
 # get a named list of the active experiments 
 # not used
@@ -13,18 +16,20 @@ library(shinythemes)
 system("./update_datasets.sh")
 
 # read all experiments: waller_salinity, waller_temperature, waller_flasks, cryptica_salinity
+Wfami <- read.csv("./WFAMI.csv", header=TRUE)
 Wsalt <- read.csv("./WSALT.csv", header=TRUE)
 Wtemp <- read.csv("./WTEMP.csv", header=TRUE)
 Wflas <- read.csv("./WFLAS.csv", header=TRUE)
-#Csalt <- read.csv("./CSALT.csv", header=TRUE)
+Csalt <- read.csv("./CSALT.csv", header=TRUE)
 
-DAT <- rbind(Wsalt, Wtemp, Wflas)
+DAT <- rbind(Wfami, Wsalt, Wtemp, Wflas, Csalt)
 DAT <- mutate(.data=DAT, Rep=factor(Replicate), 
                         Transfer=as.numeric(Transfer), 
                         Treatment=factor(Treatment),
                         Temperature=factor(Temperature),
                         Media=factor(Media),
-                        Experiment=factor(Experiment))
+                        Experiment=factor(Experiment),
+                        Strain=factor(Strain))
 
 shinyUI(fluidPage(#theme = shinytheme("flatly"),
   
@@ -51,7 +56,7 @@ shinyUI(fluidPage(#theme = shinytheme("flatly"),
                                                  label = h4("Transfer Range"), 
                                                  min = min(DAT[DAT$Experiment=="salinity",]$Transfer), 
                                                  max = max(DAT[DAT$Experiment=="salinity",]$Transfer), 
-                                                 value = c(max(DAT[DAT$Experiment=="salinity",]$Transfer)-4, 
+                                                 value = c(min(DAT[DAT$Experiment=="salinity",]$Transfer), 
                                                            max(DAT[DAT$Experiment=="salinity",]$Transfer)), ticks=TRUE)
                 ),
              

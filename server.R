@@ -11,18 +11,20 @@ library(HH)
 system("./update_datasets.sh")
 
 # read all experiments: waller_salinity, waller_temperature, waller_flasks, cryptica_salinity
+Wfami <- read.csv("./WFAMI.csv", header=TRUE)
 Wsalt <- read.csv("./WSALT.csv", header=TRUE)
 Wtemp <- read.csv("./WTEMP.csv", header=TRUE)
 Wflas <- read.csv("./WFLAS.csv", header=TRUE)
-#Csalt <- read.csv("./CSALT.csv", header=TRUE)
+Csalt <- read.csv("./CSALT.csv", header=TRUE)
 
-DAT <- rbind(Wsalt, Wtemp, Wflas)
+DAT <- rbind(Wfami, Wsalt, Wtemp, Wflas, Csalt)
 DAT <- mutate(.data=DAT, Rep=factor(Replicate), 
               Transfer=as.numeric(Transfer), 
               Treatment=factor(Treatment),
               Temperature=factor(Temperature),
               Media=factor(Media),
-              Experiment=factor(Experiment))
+              Experiment=factor(Experiment),
+              Strain=factor(Strain))
 
 shinyServer(function(input, output, session) {
   
@@ -55,17 +57,21 @@ shinyServer(function(input, output, session) {
   pl1 <- reactive ({ 
     DF <- whichSubset()
     ENV <- environment()
+    labs <- log10((10^3)*(2^(0:6)))
     plGrowCurv <- ggplot(data=DF, environment = ENV,
                          aes(x=Day, y=RF-Rfctrl, ymax=max(RF)*1.05,
                          group=Rep, shape=Rep, 
                          colour=Rep, linetype=Rep)) +
-                    geom_line(size=0.5) +
-                    geom_point(size=2) +
+                    geom_line(size=0.6) +
+                    geom_point(size=3) +
+                    geom_hline(aes(yintercept=10000), size=0.3, linetype=3, colour="firebrick4") +
                     xlab("Day") +  ylab("log10 RFU") +
                     facet_grid(Strain ~ Treatment) +
                     theme_bw() +
-                    scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x),
-                                  labels = trans_format("log10", math_format(10^.x))) 
+                    #coord_trans(y="log10")
+                    scale_y_continuous(trans=log10_trans(), 
+                               breaks = trans_breaks("log10", function(x) 10^x, n=3),
+                               labels = trans_format("log10", math_format(10^.x))) 
   return(plGrowCurv)
   })
   
