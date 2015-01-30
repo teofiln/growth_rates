@@ -31,7 +31,52 @@ DAT <- mutate(.data=DAT,
               Strain=factor(Strain),
               lnRF=log(RF-Rfctrl),
               trDay=(Hour/24)+1)
-              
+
+# prep temperature trial data for ancova
+WTEMP <- mutate(.data=Wtemp,
+                Rep=factor(Replicate),
+                seqRep=factor(Transfer),
+                Transfer=as.numeric(Transfer), 
+                Treatment=factor(Treatment),
+                Temperature=factor(Temperature),
+                Media=factor(Media),
+                Experiment=factor(Experiment),
+                Strain=factor(Strain),
+                lnRF=log(RF-Rfctrl),
+                trDay=(Hour/24)+1)
+
+# prep salinity trial data for ancova
+WSALT <- mutate(.data=Wsalt,
+                Rep=factor(Replicate),
+                seqRep=factor(Transfer),
+                Transfer=as.numeric(Transfer), 
+                Treatment=factor(Treatment),
+                Temperature=factor(Temperature),
+                Media=factor(Media),
+                Experiment=factor(Experiment),
+                Strain=factor(Strain),
+                lnRF=log(RF-Rfctrl),
+                trDay=(Hour/24)+1)
+
+# ancova for temperature
+ANCOV <- function(x) { aov(data=x, formula=lnRF ~ trDay*seqRep*Rep)}
+wtempAncovas <- dlply(.data = WTEMP, .variables=.(Strain, Treatment), .fun=ANCOV)
+wtempPredict <- ldply(.data = wtempAncovas, .variables=.(Strain, Treatment), .fun=predict)
+
+# transpose the predicted values data frame
+wtempPredict <- t(wtempPredict[,3:ncol(wtempPredict)])
+
+# create a list of data frames of
+# raw data + predicted values
+
+WTEMPsplit <- dlply(WTEMP, .(Strain, Treatment), .fun=subset)
+for (i in 1:ncol(wtempPredict)) {WTEMPsplit[[i]]$pred <- wtempPredict[,i]}
+
+
+# # ancova for salinity
+# WSALT13onwards <- WSALT[which(WSALT$Transfer >= max(WSALT$Transfer)-2),]
+# wsaltAncovas <- dlply(.data = WSALT13onwards, .variables=.(Strain, Treatment), .fun=ANCOV)
+# wsaltPredict <- ldply(.data = wsaltAncovas, .variables=.(Strain, Treatment), .fun=predict)
 
 shinyServer(function(input, output, session) {
   
@@ -58,7 +103,7 @@ shinyServer(function(input, output, session) {
   output$whichCondPanel <- renderUI({ 
     COND <- getExpName()
     COND_TEXT <- makeCondition()
-    conditionalPanel(condition= COND_TEXT,
+    condPan1 <- conditionalPanel(condition= COND_TEXT,
                      checkboxGroupInput("Strain", 
                                         label = h4("Strain"),
                                         choices = levels(droplevels(DAT[DAT$Experiment==COND,]$Strain)), 
@@ -72,8 +117,8 @@ shinyServer(function(input, output, session) {
                                  min = min(DAT[DAT$Experiment==COND,]$Transfer), 
                                  max = max(DAT[DAT$Experiment==COND,]$Transfer), 
                                  value = c(min(DAT[DAT$Experiment==COND,]$Transfer), 
-                                           max(DAT[DAT$Experiment==COND,]$Transfer)), ticks=TRUE)
-    )
+                                           max(DAT[DAT$Experiment==COND,]$Transfer)), ticks=TRUE) )
+    return(condPan1)
   })
 
   # subset the data
@@ -136,80 +181,47 @@ shinyServer(function(input, output, session) {
     return(COND)
   })
   
-  # helper to create a string for the 
-  # condition in the conditional panels
-  makeCondition2 <- reactive({
-    COND_TEXT <- paste("input.Experiment2 == ", input$Experiment2, sep="")
-    return(COND_TEXT)
-  })
-  
-  output$whichCondPanel2 <- renderUI({ 
-    COND <- getExpName2()
-    COND_TEXT <- makeCondition2()
-    conditionalPanel(condition= COND_TEXT,
-                     checkboxGroupInput("Strain2", 
-                                        label = h4("Strain"),
-                                        choices = levels(droplevels(DAT[DAT$Experiment==COND,]$Strain)), 
-                                        selected = levels(droplevels(DAT[DAT$Experiment==COND,]$Strain))[1]),
-                     checkboxGroupInput("Treatment2", 
-                                        label = h4("Treatment"),
-                                        choices = levels(droplevels(DAT[DAT$Experiment==COND,]$Treatment)), 
-                                        selected = levels(droplevels(DAT[DAT$Experiment==COND,]$Treatment))[1]),
-                     sliderInput("Transfer2", 
-                                 label = h4("Transfer Range"), 
-                                 min = min(DAT[DAT$Experiment==COND,]$Transfer), 
-                                 max = max(DAT[DAT$Experiment==COND,]$Transfer), 
-                                 value = c(max(DAT[DAT$Experiment==COND,]$Transfer)-4, 
-                                           max(DAT[DAT$Experiment==COND,]$Transfer)), ticks=TRUE)
-    )
-  })
-  
-  # subset the data
-  # based on choice of experiment
+  # choose experiment
   whichExperiment2 <- reactive({
     EXPER <- getExpName2()
-    DF <- droplevels.data.frame(DAT[which(DAT$Experiment==EXPER), ])
+    if (EXPER=="salinity") {
+      DF <- WSALTsplit
+    } else {
+      DF <- WTEMPsplit
+    }
     return(DF)
   })
   
-  # subset the data based on choice of
-  # strain, treatment and transfer range
-  # in conditional panels
+  # choose the case (combination of strain and treatment)
   whichSubset2 <- reactive({
-    DF <- whichExperiment2()
-    DF <- DF[which(DF$Strain %in% input$Strain2 & DF$Treatment %in% input$Treatment2
-                   & DF$Transfer >= input$Transfer2[1] & DF$Transfer <= input$Transfer2[2]), ]
-    return(droplevels.data.frame(DF))
+    if (input$nextCase == 0 ) {
+       return("Click 'Next case' to plot")
+     } else if (input$nextCase > length(whichExperiment2())) {
+       return("No more cases in this experiment.")
+     } else {
+       DF <- data.frame(whichExperiment2()[[input$nextCase]])
+     }
+     
+    return(DF)
   })
-  
-  # fit ancova based on choice of
-  # strain, treatment and range of transfers
-  ANCOV <- reactive({
-    DF <- whichSubset2()
-    mod <- aov(data = DF, 
-               formula = lnRF ~ trDay*seqRep*Rep, 
-               na.action=na.omit)
-    pred <- predict(mod)
-    return(pred)
-  })
-  
+
   # plot the subset as RF by Day
-  pl2 <- reactive ({
-    DF <- cbind(whichSubset2(), ANCOV())
-    ENV <- environment()
-    plotANCOVA <- ggplot(data = DF, environment=ENV,
+  pl2 <- reactive({
+    DF2 <- whichSubset2()
+    ENV2 <- environment()
+    plotANCOVA <- ggplot(data = DF2, environment=ENV2,
                          aes(y=lnRF, x=trDay, color=Rep)) + 
                          geom_point() +
                          facet_grid(. ~ seqRep) +
-                         geom_line(aes(y=pred), data = DF) +
+                         geom_line(aes(y=pred), data = DF2) +
                          theme_bw()
     return(plotANCOVA)
   })
   
-  output$Plot2 <- renderPlot({  
+  output$Plot2 <- renderPlot({
+    input$nextCase
     pl2()
   })
-
 
 ####
 ## end of second tab

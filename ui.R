@@ -48,7 +48,7 @@ shinyUI(fluidPage(theme = shinytheme("flatly"),
                                       radioButtons("Experiment",
                                                    label = h4("Experiment"),
                                                    choices = list("salinity" = 1, "temperature" = 2, "flask" = 3),
-                                                   selected = 1),
+                                                   selected = 2),
                                       
                                       uiOutput("whichCondPanel")
                                       ), # end sidebarPanel
@@ -64,9 +64,11 @@ shinyUI(fluidPage(theme = shinytheme("flatly"),
                                     radioButtons("Experiment2",
                                                  label = h4("Experiment"),
                                                  choices = list("salinity" = 1, "temperature" = 2),
-                                                 selected = 1),
-                                    
-                                    uiOutput("whichCondPanel2")
+                                                 selected = 2),
+                                                                  
+                                    actionButton("nextCase", "Next case", icon = NULL )
+                                    ## try select input with paste strain and treatment
+                                    ## would have to be passed from the server though
                                     ),
                        mainPanel(width = 10,
                                  plotOutput('Plot2', height = 900)
