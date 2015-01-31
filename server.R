@@ -9,7 +9,7 @@ library(shinythemes)
 # update the datasets 
 # creates symbolic links from original files in different folder
 # will work only localy
-system("./update_datasets.sh")
+#system("./update_datasets.sh")
 
 # read all experiments: waller_salinity, waller_temperature, waller_flasks, cryptica_salinity
 Wfami <- read.csv("./WFAMI.csv", header=TRUE)
@@ -45,19 +45,6 @@ WTEMP <- mutate(.data=Wtemp,
                 lnRF=log(RF-Rfctrl),
                 trDay=(Hour/24)+1)
 
-# prep salinity trial data for ancova
-WSALT <- mutate(.data=Wsalt,
-                Rep=factor(Replicate),
-                seqRep=factor(Transfer),
-                Transfer=as.numeric(Transfer), 
-                Treatment=factor(Treatment),
-                Temperature=factor(Temperature),
-                Media=factor(Media),
-                Experiment=factor(Experiment),
-                Strain=factor(Strain),
-                lnRF=log(RF-Rfctrl),
-                trDay=(Hour/24)+1)
-
 # ancova for temperature
 ANCOV <- function(x) { aov(data=x, formula=lnRF ~ trDay*seqRep*Rep)}
 wtempAncovas <- dlply(.data = WTEMP, .variables=.(Strain, Treatment), .fun=ANCOV)
@@ -72,6 +59,18 @@ wtempPredict <- t(wtempPredict[,3:ncol(wtempPredict)])
 WTEMPsplit <- dlply(WTEMP, .(Strain, Treatment), .fun=subset)
 for (i in 1:ncol(wtempPredict)) {WTEMPsplit[[i]]$pred <- wtempPredict[,i]}
 
+# prep salinity trial data for ancova
+WSALT <- mutate(.data=Wsalt,
+                Rep=factor(Replicate),
+                seqRep=factor(Transfer),
+                Transfer=as.numeric(Transfer), 
+                Treatment=factor(Treatment),
+                Temperature=factor(Temperature),
+                Media=factor(Media),
+                Experiment=factor(Experiment),
+                Strain=factor(Strain),
+                lnRF=log(RF-Rfctrl),
+                trDay=(Hour/24)+1)
 
 # # ancova for salinity
 # WSALT13onwards <- WSALT[which(WSALT$Transfer >= max(WSALT$Transfer)-2),]
@@ -192,16 +191,22 @@ shinyServer(function(input, output, session) {
     return(DF)
   })
   
+  # create conditional panel
+  # for choosing the case within an experiment
+  output$whichSelectInput <- renderUI({
+    out <- list(selectInput(inputId = "chooseCase", label = "Choose case",
+                       choices = names(whichExperiment2()),
+                       selected = names(whichExperiment2())[1]),
+                
+                renderUI(HTML("'Case' is concatenation of Strain and Treatment"))
+    )
+  return(out)
+  })
+  
+  
   # choose the case (combination of strain and treatment)
   whichSubset2 <- reactive({
-    if (input$nextCase == 0 ) {
-       return("Click 'Next case' to plot")
-     } else if (input$nextCase > length(whichExperiment2())) {
-       return("No more cases in this experiment.")
-     } else {
-       DF <- data.frame(whichExperiment2()[[input$nextCase]])
-     }
-     
+    DF <- whichExperiment2()[[which(names(whichExperiment2()) ==  input$chooseCase)]]
     return(DF)
   })
 

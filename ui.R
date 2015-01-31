@@ -14,7 +14,7 @@ library(HH)
 # update the datasets 
 # creates symbolic links from original files in different folder
 # will work only localy
-system("./update_datasets.sh")
+#system("./update_datasets.sh")
 
 # read all experiments: waller_salinity, waller_temperature, waller_flasks, cryptica_salinity
 Wfami <- read.csv("./WFAMI.csv", header=TRUE)
@@ -65,13 +65,15 @@ shinyUI(fluidPage(theme = shinytheme("flatly"),
                                                  label = h4("Experiment"),
                                                  choices = list("salinity" = 1, "temperature" = 2),
                                                  selected = 2),
+                                    
+                                    uiOutput("whichSelectInput")
                                                                   
-                                    actionButton("nextCase", "Next case", icon = NULL )
+                                    #actionButton("nextCase", "Next case", icon = NULL )
                                     ## try select input with paste strain and treatment
                                     ## would have to be passed from the server though
                                     ),
                        mainPanel(width = 10,
-                                 plotOutput('Plot2', height = 900)
+                                 plotOutput('Plot2', height = 500)
                                  ) # end mainPanel
                        ) # end second sidebarPanel
                      ) # end second tab
