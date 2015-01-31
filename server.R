@@ -15,24 +15,6 @@ library(shinythemes)
 source("./load_prep_data.R")
 load_prep_data()
 
-# prep salinity trial data for ancova
-# WSALT <- mutate(.data=Wsalt,
-#                 Rep=factor(Replicate),
-#                 seqRep=factor(Transfer),
-#                 Transfer=as.numeric(Transfer), 
-#                 Treatment=factor(Treatment),
-#                 Temperature=factor(Temperature),
-#                 Media=factor(Media),
-#                 Experiment=factor(Experiment),
-#                 Strain=factor(Strain),
-#                 lnRF=log(RF-Rfctrl),
-#                 trDay=(Hour/24)+1)
-
-# # ancova for salinity
-# WSALT13onwards <- WSALT[which(WSALT$Transfer >= max(WSALT$Transfer)-2),]
-# wsaltAncovas <- dlply(.data = WSALT13onwards, .variables=.(Strain, Treatment), .fun=ANCOV)
-# wsaltPredict <- ldply(.data = wsaltAncovas, .variables=.(Strain, Treatment), .fun=predict)
-
 shinyServer(function(input, output, session) {
   
   # helper to get the name of the experiment

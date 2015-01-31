@@ -16,26 +16,8 @@ library(HH)
 # will work only localy
 #system("./update_datasets.sh")
 
-# read all experiments: waller_salinity, waller_temperature, waller_flasks, cryptica_salinity
-Wfami <- read.csv("./WFAMI.csv", header=TRUE)
-Wsalt <- read.csv("./WSALT.csv", header=TRUE)
-Wtemp <- read.csv("./WTEMP.csv", header=TRUE)
-Wflas <- read.csv("./WFLAS.csv", header=TRUE)
-Csalt <- read.csv("./CSALT.csv", header=TRUE)
-
-# prepare the data
-DAT <- rbind(Wfami, Wsalt, Wtemp, Wflas, Csalt)
-DAT <- mutate(.data=DAT, 
-              Rep=factor(Replicate),
-              seqRep=factor(Transfer),
-              Transfer=as.numeric(Transfer), 
-              Treatment=factor(Treatment),
-              Temperature=factor(Temperature),
-              Media=factor(Media),
-              Experiment=factor(Experiment),
-              Strain=factor(Strain),
-              lnRF=log(RF-Rfctrl),
-              trDay=(Hour/24)+1)
+source("./load_prep_data.R")
+load_prep_data()
 
 shinyUI(fluidPage(theme = shinytheme("flatly"),
   

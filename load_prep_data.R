@@ -37,7 +37,7 @@ WTEMP <- mutate(.data=Wtemp,
                 trDay=(Hour/24)+1)
 
 # ancova for temperature
-ANCOV <- function(x) { aov(data=x, formula=lnRF ~ trDay*seqRep*Rep)}
+ANCOV <- function(x) { aov(data=x, formula=lnRF ~ trDay*seqRep*Rep, na.action=na.exclude)}
 wtempAncovas <- dlply(.data = WTEMP, .variables=.(Strain, Treatment), .fun=ANCOV)
 wtempPredict <- ldply(.data = wtempAncovas, .variables=.(Strain, Treatment), .fun=predict)
 
@@ -48,4 +48,30 @@ wtempPredict <- t(wtempPredict[,3:ncol(wtempPredict)])
 # raw data + predicted values
 WTEMPsplit <- dlply(WTEMP, .(Strain, Treatment), .fun=subset)
 for (i in 1:ncol(wtempPredict)) {WTEMPsplit[[i]]$pred <- wtempPredict[,i]}
-}
+
+# prep salinity trial data for ancova
+WSALT <- mutate(.data=Wsalt,
+                Rep=factor(Replicate),
+                seqRep=factor(Transfer),
+                Transfer=as.numeric(Transfer), 
+                Treatment=factor(Treatment),
+                Temperature=factor(Temperature),
+                Media=factor(Media),
+                Experiment=factor(Experiment),
+                Strain=factor(Strain),
+                lnRF=log(RF-Rfctrl),
+                trDay=(Hour/24)+1)
+
+# ancova for salinity
+wsaltAncovas <- dlply(.data = WSALT, .variables=.(Strain, Treatment), .fun=ANCOV)
+wsaltPredict <- ldply(.data = wsaltAncovas, .variables=.(Strain, Treatment), .fun=predict)
+
+# transpose the predicted values data frame
+wsaltPredict <- t(wsaltPredict[,3:ncol(wsaltPredict)])
+
+# create a list of data frames of
+# raw data + predicted values
+WSALTsplit <- dlply(WSALT, .(Strain, Treatment), .fun=subset)
+for (i in 1:ncol(wsaltPredict)) {WSALTsplit[[i]]$pred <- wsaltPredict[,i]}
+
+} # end function
