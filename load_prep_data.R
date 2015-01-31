@@ -11,6 +11,7 @@ Csalt <- read.csv("./CSALT.csv", header=TRUE)
 
 # prepare the data
 DAT <- rbind(Wfami, Wsalt, Wtemp, Wflas, Csalt)
+DAT$Treatment[which(DAT$Treatment == "2")] <- "02"
 DAT <- mutate(.data=DAT, 
               Rep=factor(Replicate),
               seqRep=factor(Transfer),
@@ -22,6 +23,8 @@ DAT <- mutate(.data=DAT,
               Strain=factor(Strain),
               lnRF=log(RF-Rfctrl),
               trDay=(Hour/24)+1)
+
+
 
 # prep temperature trial data for ancova
 WTEMP <- mutate(.data=Wtemp,
@@ -62,6 +65,7 @@ WSALT <- mutate(.data=Wsalt,
                 lnRF=log(RF-Rfctrl),
                 trDay=(Hour/24)+1)
 
+WSALT <- WSALT[-which(WSALT$seqRep == "F"),]
 # ancova for salinity
 wsaltAncovas <- dlply(.data = WSALT, .variables=.(Strain, Treatment), .fun=ANCOV)
 wsaltPredict <- ldply(.data = wsaltAncovas, .variables=.(Strain, Treatment), .fun=predict)
@@ -73,5 +77,7 @@ wsaltPredict <- t(wsaltPredict[,3:ncol(wsaltPredict)])
 # raw data + predicted values
 WSALTsplit <- dlply(WSALT, .(Strain, Treatment), .fun=subset)
 for (i in 1:ncol(wsaltPredict)) {WSALTsplit[[i]]$pred <- wsaltPredict[,i]}
+
+return(list(DAT, WTEMPsplit, WSALTsplit))
 
 } # end function

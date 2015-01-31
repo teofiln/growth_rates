@@ -17,7 +17,11 @@ library(HH)
 #system("./update_datasets.sh")
 
 source("./load_prep_data.R")
-load_prep_data()
+ALLDATA <- load_prep_data()
+
+DAT <- ALLDATA[[1]]
+WTEMP <- ALLDATA[[2]]
+WSALT <- ALLDATA[[3]]
 
 shinyUI(fluidPage(theme = shinytheme("flatly"),
   
@@ -35,12 +39,12 @@ shinyUI(fluidPage(theme = shinytheme("flatly"),
                                       uiOutput("whichCondPanel")
                                       ), # end sidebarPanel
                          mainPanel(width = 10,
-                                   plotOutput('Plot1', height = 900)
+                                   plotOutput('Plot1', height = 700)
                                    ) # end mainPanel
                          ) # end first sidebarLayot
                        ), # end first tab
             
-            tabPanel("Compare slopes", value = "tab2",
+            tabPanel("Slopes though time", value = "tab2",
                      sidebarLayout(
                        sidebarPanel(width = 2,
                                     radioButtons("Experiment2",

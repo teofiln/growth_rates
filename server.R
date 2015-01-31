@@ -13,7 +13,11 @@ library(shinythemes)
 #system("./copy_datasets.sh")
 
 source("./load_prep_data.R")
-load_prep_data()
+ALLDATA <- load_prep_data()
+
+DAT <- ALLDATA[[1]]
+WTEMPsplit <- ALLDATA[[2]]
+WSALTsplit <- ALLDATA[[3]]
 
 shinyServer(function(input, output, session) {
   
@@ -41,14 +45,14 @@ shinyServer(function(input, output, session) {
     COND <- getExpName()
     COND_TEXT <- makeCondition()
     condPan1 <- conditionalPanel(condition= COND_TEXT,
-                     checkboxGroupInput("Strain", 
+                     checkboxGroupInput("Strain",
                                         label = h4("Strain"),
                                         choices = levels(droplevels(DAT[DAT$Experiment==COND,]$Strain)), 
-                                        selected = levels(droplevels(DAT[DAT$Experiment==COND,]$Strain))[1:4]),
-                     checkboxGroupInput("Treatment", 
+                                        selected = levels(droplevels(DAT[DAT$Experiment==COND,]$Strain))[1:2]),
+                     checkboxGroupInput("Treatment",
                                         label = h4("Treatment"),
                                         choices = levels(droplevels(DAT[DAT$Experiment==COND,]$Treatment)), 
-                                        selected = levels(droplevels(DAT[DAT$Experiment==COND,]$Treatment))[1:4]),
+                                        selected = levels(droplevels(DAT[DAT$Experiment==COND,]$Treatment))[1:2]),
                      sliderInput("Transfer", 
                                  label = h4("Transfer Range"), 
                                  min = min(DAT[DAT$Experiment==COND,]$Transfer), 
@@ -92,6 +96,7 @@ shinyServer(function(input, output, session) {
       xlab("Day") +  ylab("log10 RFU") +
       facet_grid(Strain ~ Treatment) +
       theme_bw() +
+      ggtitle(paste(input$Strain, "at", input$Treatment, sep=" ")) +
       #coord_trans(y="log10")
       scale_y_continuous(trans=log10_trans(), 
                          breaks = trans_breaks("log10", function(x) 10^x, n=3),
@@ -132,11 +137,24 @@ shinyServer(function(input, output, session) {
   # create conditional panel
   # for choosing the case within an experiment
   output$whichSelectInput <- renderUI({
-    out <- list(selectInput(inputId = "chooseCase", label = h4("Choose case"),
-                       choices = names(whichExperiment2()),
-                       selected = names(whichExperiment2())[1]),
-                
-                renderUI(HTML("'Case' is concatenation of Strain and Treatment"))
+    AA <- do.call(rbind, strsplit(names(whichExperiment2()), "\\."))
+    Strains <- unique(AA[,1])
+    Treatments <- unique(AA[,2])
+    DF <- whichExperiment2()
+    out <- list(selectInput(inputId = "chooseStrain", label = h4("Strain"),
+                       choices = Strains,
+                         #names(whichExperiment2()),
+                       selected = Strains[1]),
+                         #names(whichExperiment2())[1]),
+                selectInput(inputId = "chooseTreatment", label = h4("Treatment"),
+                            choices = Treatments,
+                            selected = Treatments[1]),
+                sliderInput("Transfer2", 
+                            label = h4("Transfer Range"), 
+                            min = min(DF[[1]]$Transfer), 
+                            max = max(DF[[1]]$Transfer), 
+                            value = c(min(DF[[1]]$Transfer), 
+                                      max(DF[[1]]$Transfer)), ticks=TRUE)
     )
   return(out)
   })
@@ -144,7 +162,9 @@ shinyServer(function(input, output, session) {
   
   # choose the case (combination of strain and treatment)
   whichSubset2 <- reactive({
-    DF <- whichExperiment2()[[which(names(whichExperiment2()) ==  input$chooseCase)]]
+    DF <- whichExperiment2()[[which(names(whichExperiment2()) 
+                                    ==  paste(input$chooseStrain, ".", input$chooseTreatment, sep=''))]]
+    DF <- DF[which(DF$Transfer >= input$Transfer2[1] & DF$Transfer <= input$Transfer2[2]), ]
     return(DF)
   })
 
@@ -157,7 +177,8 @@ shinyServer(function(input, output, session) {
                          geom_point() +
                          facet_grid(. ~ seqRep) +
                          geom_line(aes(y=pred), data = DF2) +
-                         theme_bw()
+                         theme_bw() +
+                         ggtitle(paste(input$chooseStrain, "at", input$chooseTreatment, sep=' '))
     return(plotANCOVA)
   })
   
