@@ -10,7 +10,7 @@ library(shinythemes)
 # creates symbolic links from original files in different folder
 # will work only localy
 #system("./update_datasets.sh")
-#system("./copy_datasets.sh")
+system("./copy_datasets.sh")
 
 source("./load_prep_data.R")
 ALLDATA <- load_prep_data()
@@ -96,7 +96,7 @@ shinyServer(function(input, output, session) {
       xlab("Day") +  ylab("log10 RFU") +
       facet_grid(Strain ~ Treatment) +
       theme_bw() +
-      ggtitle(paste(input$Strain, "at", input$Treatment, sep=" ")) +
+      #ggtitle(paste(input$Strain, "at", input$Treatment, sep=" ")) +
       #coord_trans(y="log10")
       scale_y_continuous(trans=log10_trans(), 
                          breaks = trans_breaks("log10", function(x) 10^x, n=3),

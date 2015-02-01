@@ -15,6 +15,7 @@ library(HH)
 # creates symbolic links from original files in different folder
 # will work only localy
 #system("./update_datasets.sh")
+system("./copy_datasets.sh")
 
 source("./load_prep_data.R")
 ALLDATA <- load_prep_data()
