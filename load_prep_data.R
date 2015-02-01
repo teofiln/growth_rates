@@ -78,6 +78,6 @@ wsaltPredict <- t(wsaltPredict[,3:ncol(wsaltPredict)])
 WSALTsplit <- dlply(WSALT, .(Strain, Treatment), .fun=subset)
 for (i in 1:ncol(wsaltPredict)) {WSALTsplit[[i]]$pred <- wsaltPredict[,i]}
 
-return(list(DAT, WTEMPsplit, WSALTsplit))
+return(list(DAT, WTEMPsplit, WTEMP, WSALTsplit, WSALT))
 
 } # end function

@@ -4,20 +4,23 @@ library(gridExtra)
 library(plyr)
 library(scales)
 library(HH)
+library(car)
 library(shinythemes)
 
 # update the datasets 
 # creates symbolic links from original files in different folder
 # will work only localy
 #system("./update_datasets.sh")
-system("./copy_datasets.sh")
+#system("./copy_datasets.sh")
 
 source("./load_prep_data.R")
 ALLDATA <- load_prep_data()
 
 DAT <- ALLDATA[[1]]
 WTEMPsplit <- ALLDATA[[2]]
-WSALTsplit <- ALLDATA[[3]]
+WTEMP <- ALLDATA[[3]]
+WSALTsplit <- ALLDATA[[4]]
+WSALT <- ALLDATA[[5]]
 
 shinyServer(function(input, output, session) {
   
@@ -127,9 +130,9 @@ shinyServer(function(input, output, session) {
   whichExperiment2 <- reactive({
     EXPER <- getExpName2()
     if (EXPER=="salinity") {
-      DF <- WSALTsplit
+      DF <- WSALT
     } else {
-      DF <- WTEMPsplit
+      DF <- WTEMP
     }
     return(DF)
   })
@@ -137,24 +140,21 @@ shinyServer(function(input, output, session) {
   # create conditional panel
   # for choosing the case within an experiment
   output$whichSelectInput <- renderUI({
-    AA <- do.call(rbind, strsplit(names(whichExperiment2()), "\\."))
-    Strains <- unique(AA[,1])
-    Treatments <- unique(AA[,2])
+#     AA <- do.call(rbind, strsplit(names(whichExperiment2()), "\\."))
+#     Strains <- unique(AA[,1])
+#     Treatments <- unique(AA[,2])
     DF <- whichExperiment2()
     out <- list(selectInput(inputId = "chooseStrain", label = h4("Strain"),
-                       choices = Strains,
-                         #names(whichExperiment2()),
-                       selected = Strains[1]),
-                         #names(whichExperiment2())[1]),
+                            choices = levels(DF$Strain),
+                            selected = levels(DF$Strain)[1]),
                 selectInput(inputId = "chooseTreatment", label = h4("Treatment"),
-                            choices = Treatments,
-                            selected = Treatments[1]),
-                sliderInput("Transfer2", 
-                            label = h4("Transfer Range"), 
-                            min = min(DF[[1]]$Transfer), 
-                            max = max(DF[[1]]$Transfer), 
-                            value = c(min(DF[[1]]$Transfer), 
-                                      max(DF[[1]]$Transfer)), ticks=TRUE)
+                            choices = levels(DF$Treatment),
+                            selected = levels(DF$Treatment)[1]),
+                sliderInput(inputId = "Transfer2", label = h4("Transfer Range"), 
+                            min = min(DF$Transfer), 
+                            max = max(DF$Transfer), 
+                            value = c(min(DF$Transfer), 
+                                      max(DF$Transfer)), ticks=TRUE)
     )
   return(out)
   })
@@ -162,15 +162,26 @@ shinyServer(function(input, output, session) {
   
   # choose the case (combination of strain and treatment)
   whichSubset2 <- reactive({
-    DF <- whichExperiment2()[[which(names(whichExperiment2()) 
-                                    ==  paste(input$chooseStrain, ".", input$chooseTreatment, sep=''))]]
+    DF <- whichExperiment2()
+    DF <- DF[which(DF$Strain == input$chooseStrain & DF$Treatment == input$chooseTreatment), ]
     DF <- DF[which(DF$Transfer >= input$Transfer2[1] & DF$Transfer <= input$Transfer2[2]), ]
     return(DF)
   })
-
+  
+  # reactive ancova 
+  runAOV <- reactive({
+    DF <- whichSubset2()
+    res1 <- lm(data = DF, formula = lnRF ~ trDay*seqRep*Rep, na.action = na.exclude)
+    res2 <- predict(res1)
+    res3 <- cbind(DF, pred=res2)
+    result <- list(res1, res3)
+    return(result)
+  })
+  
+  
   # plot the subset as RF by Day
   pl2 <- reactive({
-    DF2 <- whichSubset2()
+    DF2 <- runAOV()[[2]]
     ENV2 <- environment()
     plotANCOVA <- ggplot(data = DF2, environment=ENV2,
                          aes(y=lnRF, x=trDay, color=Rep)) + 
@@ -182,9 +193,28 @@ shinyServer(function(input, output, session) {
     return(plotANCOVA)
   })
   
+  # render an analysis of variance table
+  tb1 <- reactive({
+    Model <- runAOV()[[1]]
+    Table <- Anova(Model, type = "III")
+    explanation <- c("Effect of Day - the log RF by Day regression",
+                     "Comparison of intercepts between Transfers within Replicate",
+                     "Comparison of intercepts between Replicates within Transfer",
+                     "Comparison of slopes between Transfers within Replicate",
+                     "Comparison of slopes between Replicates within Transfer",
+                     "Comparison of intercepts across Transfers and Replicates",
+                     "Comparison of slopes across Transfers and Replicates",
+                     "Residuals")
+    #Table <- data.frame(Table, explanation)
+    return(Table)
+  })
+
   output$Plot2 <- renderPlot({
-    input$nextCase
     pl2()
+  })
+
+  output$TableAOV <- renderTable({
+    tb1()#[c(1,4,5,7,8),]
   })
 
 ####
