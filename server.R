@@ -4,6 +4,7 @@ library(gridExtra)
 library(plyr)
 library(scales)
 library(HH)
+library(nlme)
 library(car)
 library(shinythemes)
 
@@ -154,7 +155,10 @@ shinyServer(function(input, output, session) {
                             min = min(DF$Transfer), 
                             max = max(DF$Transfer), 
                             value = c(min(DF$Transfer), 
-                                      max(DF$Transfer)), ticks=TRUE)
+                                      max(DF$Transfer)), ticks=TRUE),
+                selectInput(inputId = "switchPlot", label = h4("Faceted or superimposed"),
+                            choices = list("Faceted" = 1, "Superimposed" = 2),
+                            selected = 1)
     )
   return(out)
   })
@@ -165,13 +169,14 @@ shinyServer(function(input, output, session) {
     DF <- whichExperiment2()
     DF <- DF[which(DF$Strain == input$chooseStrain & DF$Treatment == input$chooseTreatment), ]
     DF <- DF[which(DF$Transfer >= input$Transfer2[1] & DF$Transfer <= input$Transfer2[2]), ]
+    DF <- DF[- which(DF$Hour == 0), ]
     return(DF)
   })
   
   # reactive ancova 
   runAOV <- reactive({
     DF <- whichSubset2()
-    res1 <- lm(data = DF, formula = lnRF ~ trDay*seqRep*Rep, na.action = na.exclude)
+    res1 <- lm(lnRF ~ trDay*seqRep*Rep, data = DF, na.action = na.exclude)
     res2 <- predict(res1)
     res3 <- cbind(DF, pred=res2)
     result <- list(res1, res3)
@@ -180,7 +185,7 @@ shinyServer(function(input, output, session) {
   
   
   # plot the subset as RF by Day
-  pl2 <- reactive({
+  pl2.1 <- reactive({
     DF2 <- runAOV()[[2]]
     ENV2 <- environment()
     plotANCOVA <- ggplot(data = DF2, environment=ENV2,
@@ -193,11 +198,39 @@ shinyServer(function(input, output, session) {
     return(plotANCOVA)
   })
   
+  pl2.2 <- reactive({
+    DF2 <- mutate(runAOV()[[2]], RepSeqRep = paste(Rep, seqRep, sep=""))
+    ENV2 <- environment()
+    plotANCOVA <- ggplot(data = DF2, environment=ENV2,
+                         aes(y=lnRF, x=trDay, 
+                             color=seqRep, 
+                             shape=Rep, 
+                             group=RepSeqRep
+                             )) +
+      geom_smooth(method="lm", aes(linetype=Rep), se=FALSE, fullrange=TRUE) +
+      geom_point() +
+      #facet_grid(. ~ seqRep) +
+      #geom_line(aes(y=pred, linetype=Rep), data = DF2) +
+      theme_bw() +
+      ggtitle(paste("Superimpose", input$chooseStrain, "at", input$chooseTreatment, sep=' '))
+    return(plotANCOVA)
+  })
+
+  pl2 <- reactive({
+    if (input$switchPlot == 1) {
+      plot <- pl2.1()
+    } else {
+      plot <- pl2.2()
+    }
+    return(plot)
+  })
+
   # render an analysis of variance table
   tb1 <- reactive({
     Model <- runAOV()[[1]]
     Table <- Anova(Model, type = "III")
-    explanation <- c("Effect of Day - the log RF by Day regression",
+    explanation <- c("Intercept ofregression of log RF against Day",
+                     "Slope of regression of log RF against Day",
                      "Comparison of intercepts between Transfers within Replicate",
                      "Comparison of intercepts between Replicates within Transfer",
                      "Comparison of slopes between Transfers within Replicate",
@@ -205,7 +238,7 @@ shinyServer(function(input, output, session) {
                      "Comparison of intercepts across Transfers and Replicates",
                      "Comparison of slopes across Transfers and Replicates",
                      "Residuals")
-    #Table <- data.frame(Table, explanation)
+    Table <- cbind(Table, explanation)
     return(Table)
   })
 
@@ -213,13 +246,132 @@ shinyServer(function(input, output, session) {
     pl2()
   })
 
+#   output$Plot2.1 <- renderPlot({
+#     pl2.1()
+#   })
+# 
+#   output$Plot2.2 <- renderPlot({
+#     pl2.2()
+#   })
+
   output$TableAOV <- renderTable({
     tb1()#[c(1,4,5,7,8),]
   })
 
 ####
 ## end of second tab
-  
+
+####
+## start of third tab
+
+# the logic is the same as the second tab
+# with checkBox inputs instead of selectInputs
+# and a different output
+
+# helper to get the name of the experiment
+# for creating the conditional panels
+getExpName3 <- reactive({
+  COND <- switch(input$Experiment3,
+                 "1" = "salinity",
+                 "2" = "temperature")
+  return(COND)
+})
+
+# choose experiment
+whichExperiment3 <- reactive({
+  EXPER <- getExpName3()
+  if (EXPER=="salinity") {
+    DF <- WSALT
+  } else {
+    DF <- WTEMP
+  }
+  return(DF)
+})
+
+# create conditional panel
+# for choosing the case within an experiment
+output$whichSelectInput3 <- renderUI({
+  #     AA <- do.call(rbind, strsplit(names(whichExperiment2()), "\\."))
+  #     Strains <- unique(AA[,1])
+  #     Treatments <- unique(AA[,2])
+  DF <- whichExperiment3()
+  out <- list(selectInput(inputId = "chooseStrain3", label = h4("Strain"),
+                          choices = levels(DF$Strain),
+                          selected = levels(DF$Strain)[1]),
+              selectInput(inputId = "chooseTreatment3", label = h4("Treatment"),
+                          choices = levels(DF$Treatment),
+                          selected = levels(DF$Treatment)[1]),
+              sliderInput(inputId = "Transfer3", label = h4("Transfer Range"), 
+                          min = min(DF$Transfer), 
+                          max = max(DF$Transfer), 
+                          value = c(min(DF$Transfer), 
+                                    max(DF$Transfer)), ticks=TRUE)
+  )
+  return(out)
+})
+
+
+# choose the case (combination of strain and treatment)
+whichSubset3 <- reactive({
+  DF <- whichExperiment3()
+  DF <- DF[which(DF$Strain == input$chooseStrain3 & DF$Treatment == input$chooseTreatment3), ]
+  DF <- DF[which(DF$Transfer >= input$Transfer3[1] & DF$Transfer <= input$Transfer3[2]), ]
+  return(DF)
+})
+
+# reactive ancova 
+runAOV3 <- reactive({
+  DF <- whichSubset3()
+  res1 <- lm(lnRF ~ trDay*seqRep*Rep, data = DF, na.action = na.exclude)
+  res2 <- predict(res1)
+  res3 <- cbind(DF, pred=res2)
+  result <- list(res1, res3)
+  return(result)
+})
+
+
+# plot the subset as RF by Day
+pl3 <- reactive({
+  DF2 <- runAOV3()[[2]]
+  ENV2 <- environment()
+  plotANCOVA <- ggplot(data = DF2, environment=ENV2,
+                       aes(y=lnRF, x=trDay, color=Rep)) + 
+    geom_point() +
+    facet_grid(. ~ seqRep) +
+    geom_line(aes(y=pred), data = DF2) +
+    theme_bw() +
+    ggtitle(paste(input$chooseStrain, "at", input$chooseTreatment, sep=' '))
+  return(plotANCOVA)
+})
+
+# render an analysis of variance table
+tb3 <- reactive({
+  Model <- runAOV3()[[1]]
+  Table <- Anova(Model, type = "III")
+  explanation <- c("Intercept ofregression of log RF against Day",
+                   "Slope of regression of log RF against Day",
+                   "Comparison of intercepts between Transfers within Replicate",
+                   "Comparison of intercepts between Replicates within Transfer",
+                   "Comparison of slopes between Transfers within Replicate",
+                   "Comparison of slopes between Replicates within Transfer",
+                   "Comparison of intercepts across Transfers and Replicates",
+                   "Comparison of slopes across Transfers and Replicates",
+                   "Residuals")
+  Table <- cbind(Table, explanation)
+  return(Table)
+})
+
+output$Plot3 <- renderPlot({
+  pl3()
+})
+
+output$TableAOV3 <- renderTable({
+  tb3()#[c(1,4,5,7,8),]
+})
+
+####
+## end of third tab
+
   output$textAbout <- renderUI({
     HTML("<p>Tool to view and calculate growth rates.</p>")
   })
