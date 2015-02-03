@@ -42,7 +42,7 @@ shinyUI(fluidPage(theme = shinytheme("flatly"),
                                       uiOutput("whichCondPanel")
                                       ), # end sidebarPanel
                          mainPanel(width = 10,
-                                   plotOutput('Plot1', height = 700)
+                                   plotOutput('Plot1', height = 800)
                                    ) # end mainPanel
                          ) # end first sidebarLayot
                        ), # end first tab

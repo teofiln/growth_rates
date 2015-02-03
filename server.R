@@ -176,10 +176,12 @@ shinyServer(function(input, output, session) {
   # reactive ancova 
   runAOV <- reactive({
     DF <- whichSubset2()
-    res1 <- lm(lnRF ~ trDay*seqRep*Rep, data = DF, na.action = na.exclude)
-    res2 <- predict(res1)
-    res3 <- cbind(DF, pred=res2)
-    result <- list(res1, res3)
+    MOD <- lm(lnRF ~ trDay*seqRep*Rep, data = DF, na.action = na.exclude)
+    PRED <- predict(MOD, se=TRUE)
+    UCL <- PRED$fit + 1.96 * PRED$se.fit
+    LCL <- PRED$fit - 1.96 * PRED$se.fit
+    res3 <- cbind(DF, PRED=PRED$fit, UCL, LCL)
+    result <- list(MOD, res3)
     return(result)
   })
   
@@ -192,7 +194,8 @@ shinyServer(function(input, output, session) {
                          aes(y=lnRF, x=trDay, color=Rep)) + 
                          geom_point() +
                          facet_grid(. ~ seqRep) +
-                         geom_line(aes(y=pred), data = DF2) +
+                         geom_smooth(aes(y=PRED, ymin=LCL, ymax=UCL, fill=Rep),
+                                     data = DF2, stat="identity") +
                          theme_bw() +
                          ggtitle(paste(input$chooseStrain, "at", input$chooseTreatment, sep=' '))
     return(plotANCOVA)
@@ -207,12 +210,14 @@ shinyServer(function(input, output, session) {
                              shape=Rep, 
                              group=RepSeqRep
                              )) +
-      geom_smooth(method="lm", aes(linetype=Rep), se=FALSE, fullrange=TRUE) +
+      geom_smooth(aes(y=PRED, ymin=LCL, ymax=UCL, linetype=Rep, fill=seqRep), 
+                  data = DF2, method="lm", stat="identity", fullrange=TRUE) +
+      #geom_smooth(method="lm", data=DF2, aes(linetype=Rep, ), se=TRUE, fullrange=TRUE) +
       geom_point() +
       #facet_grid(. ~ seqRep) +
       #geom_line(aes(y=pred, linetype=Rep), data = DF2) +
       theme_bw() +
-      ggtitle(paste("Superimpose", input$chooseStrain, "at", input$chooseTreatment, sep=' '))
+      ggtitle(paste(input$chooseStrain, "at", input$chooseTreatment, sep=' '))
     return(plotANCOVA)
   })
 
