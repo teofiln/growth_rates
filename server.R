@@ -205,7 +205,7 @@ shinyServer(function(input, output, session) {
                          geom_smooth(aes(y=PRED, ymin=LSE, ymax=USE, fill=Rep),
                                      data = DF2, stat="identity") +
                          theme_bw() +
-                         ggtitle(paste("Slope of", input$chooseStrain, "at", input$chooseTreatment,
+                         ggtitle(paste("Slopes of", input$chooseStrain, "at", input$chooseTreatment,
                                        "ppt. Shaded region corresponds to predicted value +- standard error.",
                                        sep=' '))
     return(plotANCOVA)
@@ -227,8 +227,10 @@ shinyServer(function(input, output, session) {
       #facet_grid(. ~ seqRep) +
       #geom_line(aes(y=pred, linetype=Rep), data = DF2) +
       theme_bw() +
-      ggtitle(paste(input$chooseStrain, "at", input$chooseTreatment, sep=' '))
-    return(plotANCOVA)
+      ggtitle(paste("Slopes of", input$chooseStrain, "at", input$chooseTreatment,
+                    "ppt. Shaded region corresponds to predicted value +- standard error.",
+                    sep=' '))
+      return(plotANCOVA)
   })
 
   pl2 <- reactive({
@@ -244,16 +246,16 @@ shinyServer(function(input, output, session) {
   tb1 <- reactive({
     Model <- runAOV()[[1]]
     Table <- Anova(Model, type = "III")
-#     explanation <- c("Intercept of regression of log RF against Day",
-#                      "Slope of regression of log RF against Day",
-#                      "Comparison of intercepts between Transfers within Replicate",
-#                      "Comparison of intercepts between Replicates within Transfer",
-#                      "Comparison of slopes between Transfers within Replicate",
-#                      "Comparison of slopes between Replicates within Transfer",
-#                      "Comparison of intercepts across Transfers and Replicates",
-#                      "Comparison of slopes across Transfers and Replicates",
-#                      "Residuals")
-#     Table <- cbind(Table, explanation)
+    explanation <- c("Intercept of regression of log RF against Day",
+                     "Slope of regression of log RF against Day",
+                     "Comparison of intercepts across Transfers",
+                     "Comparison of intercepts across Replicates",
+                     "Comparison of slopes across Transfers",
+                     "Comparison of slopes across Replicates",
+                     "Comparison of intercepts of the interaction Transfer-by-Replicate",
+                     "Comparison of slopes of the interaction Transfer-by-Replicate",
+                     "Residuals")
+    Table <- cbind(Table, explanation)
     return(Table)
   })
 
