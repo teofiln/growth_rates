@@ -25,6 +25,8 @@ WTEMPsplit <- ALLDATA[[2]]
 WTEMP <- ALLDATA[[3]]
 WSALTsplit <- ALLDATA[[4]]
 WSALT <- ALLDATA[[5]]
+WTEMPslope <- ALLDATA[[6]]
+WSALTslope <- ALLDATA[[7]]
 
 shinyUI(fluidPage(theme = shinytheme("flatly"),
   
@@ -37,7 +39,7 @@ shinyUI(fluidPage(theme = shinytheme("flatly"),
                                       radioButtons("Experiment",
                                                    label = h4("Experiment"),
                                                    choices = list("salinity" = 1, "temperature" = 2, "flask" = 3),
-                                                   selected = 2),
+                                                   selected = 1),
                                       
                                       uiOutput("whichCondPanel")
                                       ), # end sidebarPanel
@@ -53,11 +55,9 @@ shinyUI(fluidPage(theme = shinytheme("flatly"),
                                     radioButtons("Experiment2",
                                                  label = h4("Experiment"),
                                                  choices = list("salinity" = 1, "temperature" = 2),
-                                                 selected = 2),
+                                                 selected = 1),
                                     
                                     uiOutput("whichSelectInput")
-                                                                  
-                                    #actionButton("nextCase", "Next case", icon = NULL )
                                     ),
                        mainPanel(width = 10,
                                  plotOutput('Plot2', height = 500),
@@ -76,15 +76,15 @@ shinyUI(fluidPage(theme = shinytheme("flatly"),
                                     radioButtons("Experiment3",
                                                  label = h4("Experiment"),
                                                  choices = list("salinity" = 1, "temperature" = 2),
-                                                 selected = 2),
+                                                 selected = 1),
                                     
-                                    uiOutput("whichSelectInput3")
-                                    
-                                    #actionButton("nextCase", "Next case", icon = NULL )
+                                    uiOutput("whichCheckBoxInput3")#,
+                                   # actionButton("actionPlot3", "Plot")
                        ),
                        mainPanel(width = 10,
-                                 plotOutput('Plot3', height = 500),
-                                 tableOutput('TableAOV3')
+                                 plotOutput('Plot3.1', height = 400),
+                                 plotOutput('Plot3.2', height = 400)#,
+                                 #tableOutput('TableAOV3')
                        ) # end mainPanel
                      ) # end second sidebarPanel
                   ) # end second tab

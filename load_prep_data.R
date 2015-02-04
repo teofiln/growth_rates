@@ -22,7 +22,7 @@ DAT <- mutate(.data=DAT,
               Experiment=factor(Experiment),
               Strain=factor(Strain),
               lnRF=log(RF-Rfctrl),
-              trDay=(Hour/24)+1)
+              trDay=as.integer((Hour/24)+1))
 
 
 
@@ -37,7 +37,7 @@ WTEMP <- mutate(.data=Wtemp,
                 Experiment=factor(Experiment),
                 Strain=factor(Strain),
                 lnRF=log(RF-Rfctrl),
-                trDay=(Hour/24)+1)
+                trDay=as.integer((Hour/24)+1))
 
 # ancova for temperature
 ANCOV <- function(x) { aov(data=x, formula=lnRF ~ trDay*seqRep*Rep, na.action=na.exclude)}
@@ -52,6 +52,47 @@ wtempPredict <- t(wtempPredict[,3:ncol(wtempPredict)])
 WTEMPsplit <- dlply(WTEMP, .(Strain, Treatment), .fun=subset)
 for (i in 1:ncol(wtempPredict)) {WTEMPsplit[[i]]$pred <- wtempPredict[,i]}
 
+# function to fit linear model
+# retaining only the slope
+getSlope <- function(x) { coefficients(lm(formula=lnRF ~ trDay, data=x, na.action=na.exclude))[2] }
+
+# function to get the mean and standard deviation of the slope
+# given the output from above function
+# currently not used 
+meanNsd <- function(x) { c(Mean=mean(x$trDay, na.rm=TRUE), SD=sd(x$trDay, na.rm=TRUE)) }
+
+# get slopes for Transfer > 2 
+# assuming 'acclimation'
+WTEMPafter2 <- WTEMP[which(WTEMP$Transfer > 2), ]
+
+# ddply getting slope for each case
+slopesTemp <- ddply(.data=WTEMPafter2, 
+                    .variables=.(Strain, Treatment, seqRep, Rep),
+                    .fun=getSlope)
+
+# perhaps most appropriate
+# estimate slopes of the model
+# ln RF against Day for every level of Treatment
+# with Strain, Transfer and Replicate giving the error 
+
+treatAncova <- function(x) {
+  fit <- lm(formula=lnRF ~ Treatment*trDay+error(Rep + seqRep), data=WTEMPafter2, na.action=na.exclude)
+  return(fit)
+}
+
+# ddply getting slope for each case
+treatSlopesTemp <- dlply(.data=WTEMPafter2, 
+                    .variables=.(Strain, Treatment),
+                    .fun=treatAncova)
+
+
+# average by Strain and Treatment only 
+# disregarding Rep and seqRep
+# not used
+# meanSlopesTemp <- ddply(.data=slopesTemp,
+#                         .variables=.(Strain, Treatment),
+#                         .fun=meanNsd)
+
 # prep salinity trial data for ancova
 WSALT <- mutate(.data=Wsalt,
                 Rep=factor(Replicate),
@@ -63,7 +104,7 @@ WSALT <- mutate(.data=Wsalt,
                 Experiment=factor(Experiment),
                 Strain=factor(Strain),
                 lnRF=log(RF-Rfctrl),
-                trDay=(Hour/24)+1)
+                trDay=as.integer((Hour/24)+1))
 
 WSALT <- WSALT[-which(WSALT$seqRep == "F"),]
 # ancova for salinity
@@ -78,6 +119,16 @@ wsaltPredict <- t(wsaltPredict[,3:ncol(wsaltPredict)])
 WSALTsplit <- dlply(WSALT, .(Strain, Treatment), .fun=subset)
 for (i in 1:ncol(wsaltPredict)) {WSALTsplit[[i]]$pred <- wsaltPredict[,i]}
 
-return(list(DAT, WTEMPsplit, WTEMP, WSALTsplit, WSALT))
+# get slopes for Transfer > 2 
+# assuming 'acclimation'
+WSALTafter10 <- WSALT[which(WSALT$Transfer > 10), ]
+
+# ddply getting slope for each case
+slopesSalt <- ddply(.data=WSALTafter10, 
+                    .variables=.(Strain, Treatment, seqRep, Rep),
+                    .fun=getSlope)
+
+
+return(list(DAT, WTEMPsplit, WTEMP, WSALTsplit, WSALT, slopesTemp, slopesSalt))
 
 } # end function

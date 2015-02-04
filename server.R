@@ -22,6 +22,12 @@ WTEMPsplit <- ALLDATA[[2]]
 WTEMP <- ALLDATA[[3]]
 WSALTsplit <- ALLDATA[[4]]
 WSALT <- ALLDATA[[5]]
+WTEMPslopes <- ALLDATA[[6]]
+WSALTslopes <- ALLDATA[[7]]
+
+# get mean, SD
+# helper
+meanNsd <- function(x) { c(Mean=mean(x$trDay, na.rm=TRUE), SD=sd(x$trDay, na.rm=TRUE)) }
 
 shinyServer(function(input, output, session) {
   
@@ -176,11 +182,13 @@ shinyServer(function(input, output, session) {
   # reactive ancova 
   runAOV <- reactive({
     DF <- whichSubset2()
-    MOD <- lm(lnRF ~ trDay*seqRep*Rep, data = DF, na.action = na.exclude)
+    MOD <- lm(lnRF ~ trDay + trDay:seqRep + trDay:Rep, data = DF, na.action = na.exclude)
     PRED <- predict(MOD, se=TRUE)
     UCL <- PRED$fit + 1.96 * PRED$se.fit
     LCL <- PRED$fit - 1.96 * PRED$se.fit
-    res3 <- cbind(DF, PRED=PRED$fit, UCL, LCL)
+    USE <- PRED$fit + PRED$se.fit
+    LSE <- PRED$fit - PRED$se.fit
+    res3 <- cbind(DF, PRED=PRED$fit, UCL, LCL, USE, LSE)
     result <- list(MOD, res3)
     return(result)
   })
@@ -194,10 +202,12 @@ shinyServer(function(input, output, session) {
                          aes(y=lnRF, x=trDay, color=Rep)) + 
                          geom_point() +
                          facet_grid(. ~ seqRep) +
-                         geom_smooth(aes(y=PRED, ymin=LCL, ymax=UCL, fill=Rep),
+                         geom_smooth(aes(y=PRED, ymin=LSE, ymax=USE, fill=Rep),
                                      data = DF2, stat="identity") +
                          theme_bw() +
-                         ggtitle(paste(input$chooseStrain, "at", input$chooseTreatment, sep=' '))
+                         ggtitle(paste("Slope of", input$chooseStrain, "at", input$chooseTreatment,
+                                       "ppt. Shaded region corresponds to predicted value +- standard error.",
+                                       sep=' '))
     return(plotANCOVA)
   })
   
@@ -210,7 +220,7 @@ shinyServer(function(input, output, session) {
                              shape=Rep, 
                              group=RepSeqRep
                              )) +
-      geom_smooth(aes(y=PRED, ymin=LCL, ymax=UCL, linetype=Rep, fill=seqRep), 
+      geom_smooth(aes(y=PRED, ymin=LSE, ymax=USE, linetype=Rep, fill=seqRep), 
                   data = DF2, method="lm", stat="identity", fullrange=TRUE) +
       #geom_smooth(method="lm", data=DF2, aes(linetype=Rep, ), se=TRUE, fullrange=TRUE) +
       geom_point() +
@@ -234,16 +244,16 @@ shinyServer(function(input, output, session) {
   tb1 <- reactive({
     Model <- runAOV()[[1]]
     Table <- Anova(Model, type = "III")
-    explanation <- c("Intercept ofregression of log RF against Day",
-                     "Slope of regression of log RF against Day",
-                     "Comparison of intercepts between Transfers within Replicate",
-                     "Comparison of intercepts between Replicates within Transfer",
-                     "Comparison of slopes between Transfers within Replicate",
-                     "Comparison of slopes between Replicates within Transfer",
-                     "Comparison of intercepts across Transfers and Replicates",
-                     "Comparison of slopes across Transfers and Replicates",
-                     "Residuals")
-    Table <- cbind(Table, explanation)
+#     explanation <- c("Intercept of regression of log RF against Day",
+#                      "Slope of regression of log RF against Day",
+#                      "Comparison of intercepts between Transfers within Replicate",
+#                      "Comparison of intercepts between Replicates within Transfer",
+#                      "Comparison of slopes between Transfers within Replicate",
+#                      "Comparison of slopes between Replicates within Transfer",
+#                      "Comparison of intercepts across Transfers and Replicates",
+#                      "Comparison of slopes across Transfers and Replicates",
+#                      "Residuals")
+#     Table <- cbind(Table, explanation)
     return(Table)
   })
 
@@ -286,92 +296,88 @@ getExpName3 <- reactive({
 whichExperiment3 <- reactive({
   EXPER <- getExpName3()
   if (EXPER=="salinity") {
-    DF <- WSALT
+    DF <- WSALTslopes
   } else {
-    DF <- WTEMP
+    DF <- WTEMPslopes
   }
   return(DF)
 })
 
 # create conditional panel
 # for choosing the case within an experiment
-output$whichSelectInput3 <- renderUI({
+output$whichCheckBoxInput3 <- renderUI({
   #     AA <- do.call(rbind, strsplit(names(whichExperiment2()), "\\."))
   #     Strains <- unique(AA[,1])
   #     Treatments <- unique(AA[,2])
   DF <- whichExperiment3()
-  out <- list(selectInput(inputId = "chooseStrain3", label = h4("Strain"),
+  out <- list(checkboxGroupInput(inputId = "chooseStrain3", label = h4("Strain"),
                           choices = levels(DF$Strain),
-                          selected = levels(DF$Strain)[1]),
-              selectInput(inputId = "chooseTreatment3", label = h4("Treatment"),
+                          selected = levels(DF$Strain)[1:5]),
+              checkboxGroupInput(inputId = "chooseTreatment3", label = h4("Treatment"),
                           choices = levels(DF$Treatment),
-                          selected = levels(DF$Treatment)[1]),
-              sliderInput(inputId = "Transfer3", label = h4("Transfer Range"), 
-                          min = min(DF$Transfer), 
-                          max = max(DF$Transfer), 
-                          value = c(min(DF$Transfer), 
-                                    max(DF$Transfer)), ticks=TRUE)
+                          selected = levels(DF$Treatment)[1:5])#,
+#                sliderInput(inputId = "Transfer3", label = h4("Transfer Range"), 
+#                            min = min(DF$Transfer), 
+#                            max = max(DF$Transfer), 
+#                            value = c(min(DF$Transfer), 
+#                                      max(DF$Transfer)), ticks=TRUE)
   )
   return(out)
 })
 
-
 # choose the case (combination of strain and treatment)
 whichSubset3 <- reactive({
-  DF <- whichExperiment3()
-  DF <- DF[which(DF$Strain == input$chooseStrain3 & DF$Treatment == input$chooseTreatment3), ]
-  DF <- DF[which(DF$Transfer >= input$Transfer3[1] & DF$Transfer <= input$Transfer3[2]), ]
+  DF <- isolate( whichExperiment3() )
+  DF <- DF[which(DF$Strain %in% input$chooseStrain3 & DF$Treatment %in% input$chooseTreatment3), ]
+ # DF <- DF[which(DF$Transfer >= input$Transfer3[1] & DF$Transfer <= input$Transfer3[2]), ]
   return(DF)
+}) 
+
+getMean <- reactive({
+  DF3 <- whichSubset3()
+  meanSlopes <- ddply(.data=DF3,
+                      .variables=.(Strain, Treatment),
+                      .fun=meanNsd)
+  return(meanSlopes)
 })
 
-# reactive ancova 
-runAOV3 <- reactive({
-  DF <- whichSubset3()
-  res1 <- lm(lnRF ~ trDay*seqRep*Rep, data = DF, na.action = na.exclude)
-  res2 <- predict(res1)
-  res3 <- cbind(DF, pred=res2)
-  result <- list(res1, res3)
-  return(result)
-})
-
-
-# plot the subset as RF by Day
-pl3 <- reactive({
-  DF2 <- runAOV3()[[2]]
-  ENV2 <- environment()
-  plotANCOVA <- ggplot(data = DF2, environment=ENV2,
-                       aes(y=lnRF, x=trDay, color=Rep)) + 
-    geom_point() +
-    facet_grid(. ~ seqRep) +
-    geom_line(aes(y=pred), data = DF2) +
+# plot the mean slopes (growth rates)
+pl3.1 <- reactive({
+  DF3 <- getMean()
+  ENV3 <- environment()
+  plotMeanSlopes <- ggplot(data = DF3, environment=ENV3, aes(x=Treatment, y=Mean, fill=Treatment)) + 
+    geom_bar(stat="identity", data=DF3, width=.8, colour="black") +
+    geom_errorbar(aes(ymin=Mean-SD, ymax=Mean+SD), width=.2, data = DF3) +
+    scale_fill_brewer(palette="Blues") + #, name="Salinity") +
+    facet_grid(. ~ Strain) +
     theme_bw() +
-    ggtitle(paste(input$chooseStrain, "at", input$chooseTreatment, sep=' '))
-  return(plotANCOVA)
+    ggtitle("Mean growth rate across Transfer and Replicates over the last 3 Transfers at different salinities. Error bars are mean +- 1 standard deviation.") +
+    ylab("Mean growth rate (slope)")
+  return(plotMeanSlopes)
+  
 })
 
-# render an analysis of variance table
-tb3 <- reactive({
-  Model <- runAOV3()[[1]]
-  Table <- Anova(Model, type = "III")
-  explanation <- c("Intercept ofregression of log RF against Day",
-                   "Slope of regression of log RF against Day",
-                   "Comparison of intercepts between Transfers within Replicate",
-                   "Comparison of intercepts between Replicates within Transfer",
-                   "Comparison of slopes between Transfers within Replicate",
-                   "Comparison of slopes between Replicates within Transfer",
-                   "Comparison of intercepts across Transfers and Replicates",
-                   "Comparison of slopes across Transfers and Replicates",
-                   "Residuals")
-  Table <- cbind(Table, explanation)
-  return(Table)
+# plot the coefficient of variation of the growth rate
+pl3.2 <- reactive({
+  DF3 <- getMean()
+  ENV3 <- environment()
+  plotCV <- ggplot(data = DF3, environment=ENV3, aes(x=Treatment, y=SD/Mean, fill=Treatment)) + 
+    geom_bar(stat="identity", data=DF3, width=.8, colour="black") +
+    scale_fill_brewer(palette="Blues") + #, name="Salinity") +
+    facet_grid(. ~ Strain) +
+    theme_bw() +
+    ggtitle("Coefficient of variation (SD / Mean) as a measure of the variability around the mean growth rate across Transfers and Replicates.") +
+    ylab("Coefficient of variation")
+  return(plotCV)
+  
+}) 
+
+output$Plot3.1 <- renderPlot({
+  pl3.1()
 })
 
-output$Plot3 <- renderPlot({
-  pl3()
-})
-
-output$TableAOV3 <- renderTable({
-  tb3()#[c(1,4,5,7,8),]
+output$Plot3.2 <- renderPlot({
+  pl3.2()
 })
 
 ####
