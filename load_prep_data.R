@@ -76,7 +76,7 @@ slopesTemp <- ddply(.data=WTEMPafter2,
 # with Strain, Transfer and Replicate giving the error 
 
 treatAncova <- function(x) {
-  fit <- lm(formula=lnRF ~ Treatment*trDay+error(Rep + seqRep), data=WTEMPafter2, na.action=na.exclude)
+  fit <- aov(formula=lnRF ~ Treatment*trDay + Error(Rep * seqRep), data=WTEMPafter2, na.action=na.exclude)
   return(fit)
 }
 
@@ -127,7 +127,6 @@ WSALTafter10 <- WSALT[which(WSALT$Transfer > 10), ]
 slopesSalt <- ddply(.data=WSALTafter10, 
                     .variables=.(Strain, Treatment, seqRep, Rep),
                     .fun=getSlope)
-
 
 return(list(DAT, WTEMPsplit, WTEMP, WSALTsplit, WSALT, slopesTemp, slopesSalt))
 
