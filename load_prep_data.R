@@ -75,8 +75,10 @@ slopesTemp <- ddply(.data=WTEMPafter2,
 # ln RF against Day for every level of Treatment
 # with Strain, Transfer and Replicate giving the error 
 
+#not used
 treatAncova <- function(x) {
-  fit <- aov(formula=lnRF ~ Treatment*trDay + Error(Rep * seqRep), data=WTEMPafter2, na.action=na.exclude)
+  fit <- aov(formula = lnRF ~ Treatment*trDay + Error(Rep * seqRep), 
+             data = WTEMPafter2, na.action=na.exclude)
   return(fit)
 }
 

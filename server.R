@@ -182,7 +182,7 @@ shinyServer(function(input, output, session) {
   # reactive ancova 
   runAOV <- reactive({
     DF <- whichSubset2()
-    MOD <- lm(lnRF ~ trDay + trDay:seqRep + trDay:Rep, data = DF, na.action = na.exclude)
+    MOD <- lm(lnRF ~ trDay*seqRep*Rep, data = DF, na.action = na.exclude)
     PRED <- predict(MOD, se=TRUE)
     UCL <- PRED$fit + 1.96 * PRED$se.fit
     LCL <- PRED$fit - 1.96 * PRED$se.fit
