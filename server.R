@@ -354,7 +354,8 @@ pl3.1 <- reactive({
     facet_grid(. ~ Strain) +
     theme_bw() +
     ggtitle("Mean growth rate across Transfer and Replicates over the last 3 Transfers at different salinities. Error bars are mean +- 1 standard deviation.") +
-    ylab("Mean growth rate (slope)")
+    ylab("Mean growth rate (slope)") #+
+    #ylim(min(DF3$Mean)-0.1,1) 
   return(plotMeanSlopes)
   
 })
@@ -363,13 +364,14 @@ pl3.1 <- reactive({
 pl3.2 <- reactive({
   DF3 <- getMean()
   ENV3 <- environment()
-  plotCV <- ggplot(data = DF3, environment=ENV3, aes(x=Treatment, y=SD/Mean, fill=Treatment)) + 
+  plotCV <- ggplot(data = DF3, environment=ENV3, aes(x=Treatment, y=abs(SD/Mean), fill=Treatment)) + 
     geom_bar(stat="identity", data=DF3, width=.8, colour="black") +
     scale_fill_brewer(palette="Blues") + #, name="Salinity") +
     facet_grid(. ~ Strain) +
     theme_bw() +
-    ggtitle("Coefficient of variation (SD / Mean) as a measure of the variability around the mean growth rate across Transfers and Replicates.") +
-    ylab("Coefficient of variation")
+    ggtitle("Coefficient of variation (|SD/Mean|) as a measure of the variability around the mean growth rate across Transfers and Replicates.") +
+    ylab("|Coefficient of variation|") #+
+    #ylim(0,max(abs(DF3$SD/DF3$Mean))+0.02) 
   return(plotCV)
   
 }) 
