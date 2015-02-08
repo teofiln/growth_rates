@@ -202,8 +202,8 @@ shinyServer(function(input, output, session) {
                          aes(y=lnRF, x=trDay, color=Rep)) + 
                          geom_point() +
                          facet_grid(. ~ seqRep) +
-                         geom_smooth(aes(y=PRED, ymin=LSE, ymax=USE, fill=Rep),
-                                     data = DF2, stat="identity") +
+                         geom_smooth(aes(y=PRED),#, ymin=LSE, ymax=USE, fill=Rep),
+                                     data = DF2, stat="identity", se=FALSE) +
                          theme_bw() +
                          ggtitle(paste("Slopes of", input$chooseStrain, "at", input$chooseTreatment,
                                        "ppt. Shaded region corresponds to predicted value +- standard error.",
@@ -220,8 +220,8 @@ shinyServer(function(input, output, session) {
                              shape=Rep, 
                              group=RepSeqRep
                              )) +
-      geom_smooth(aes(y=PRED, ymin=LSE, ymax=USE, linetype=Rep, fill=seqRep), 
-                  data = DF2, method="lm", stat="identity", fullrange=TRUE) +
+      geom_smooth(aes(y=PRED, linetype=Rep),#, ymin=LSE, ymax=USE, fill=seqRep), 
+                  data = DF2, method="lm", stat="identity", fullrange=TRUE, se=FALSE) +
       #geom_smooth(method="lm", data=DF2, aes(linetype=Rep, ), se=TRUE, fullrange=TRUE) +
       geom_point() +
       #facet_grid(. ~ seqRep) +
