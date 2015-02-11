@@ -38,7 +38,7 @@ shinyUI(fluidPage(theme = shinytheme("flatly"),
                          sidebarPanel(width = 2,
                                       radioButtons("Experiment",
                                                    label = h4("Experiment"),
-                                                   choices = list("salinity" = 1, "temperature" = 2, "flask" = 3),
+                                                   choices = list("salinity" = 1, "temperature" = 2, "flask" = 3, "flask2" = 4),
                                                    selected = 1),
                                       
                                       uiOutput("whichCondPanel")

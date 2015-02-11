@@ -7,10 +7,11 @@ Wfami <- read.csv("./WFAMI.csv", header=TRUE)
 Wsalt <- read.csv("./WSALT.csv", header=TRUE)
 Wtemp <- read.csv("./WTEMP.csv", header=TRUE)
 Wflas <- read.csv("./WFLAS.csv", header=TRUE)
+Wflas2 <- read.csv("./WFLAS2.csv", header=TRUE)
 Csalt <- read.csv("./CSALT.csv", header=TRUE)
 
 # prepare the data
-DAT <- rbind(Wfami, Wsalt, Wtemp, Wflas, Csalt)
+DAT <- rbind(Wfami, Wsalt, Wtemp, Wflas, Wflas2, Csalt)
 DAT$Treatment[which(DAT$Treatment == "2")] <- "02"
 DAT <- mutate(.data=DAT, 
               Rep=factor(Replicate),

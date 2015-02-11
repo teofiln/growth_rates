@@ -37,7 +37,8 @@ shinyServer(function(input, output, session) {
     COND <- switch(input$Experiment,
                  "1" = "salinity",
                  "2" = "temperature",
-                 "3" = "flask")
+                 "3" = "flask",
+                 "4" = "flask2")
     return(COND)
   })
   
@@ -68,7 +69,14 @@ shinyServer(function(input, output, session) {
                                  min = min(DAT[DAT$Experiment==COND,]$Transfer), 
                                  max = max(DAT[DAT$Experiment==COND,]$Transfer), 
                                  value = c(min(DAT[DAT$Experiment==COND,]$Transfer), 
-                                           max(DAT[DAT$Experiment==COND,]$Transfer)), ticks=TRUE) )
+                                           max(DAT[DAT$Experiment==COND,]$Transfer)), ticks=TRUE),
+                     sliderInput("aspect_ratio", 
+                                 label = h4("Aspect ratio"), 
+                                 min = 0, 
+                                 max = 10, 
+                                 value = 1, 
+                                 ticks=TRUE)
+                     )
     return(condPan1)
   })
 
@@ -115,7 +123,7 @@ shinyServer(function(input, output, session) {
   })
   
   output$Plot1 <- renderPlot({  
-    pl1()
+    pl1() + coord_fixed(ratio=input$aspect_ratio)
   })
     
   ####
