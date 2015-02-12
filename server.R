@@ -24,6 +24,9 @@ WSALTsplit <- ALLDATA[[4]]
 WSALT <- ALLDATA[[5]]
 WTEMPslopes <- ALLDATA[[6]]
 WSALTslopes <- ALLDATA[[7]]
+CSALT <- ALLDATA[[8]]
+CSALTsplit <- ALLDATA[[9]]
+CSALTslopes <- ALLDATA[[10]]
 
 # get mean, SD
 # helper
@@ -137,18 +140,24 @@ shinyServer(function(input, output, session) {
   getExpName2 <- reactive({
     COND <- switch(input$Experiment2,
                    "1" = "salinity",
-                   "2" = "temperature")
+                   "2" = "temperature",
+                   "3" = "cryptica")
     return(COND)
   })
   
   # choose experiment
   whichExperiment2 <- reactive({
     EXPER <- getExpName2()
-    if (EXPER=="salinity") {
-      DF <- WSALT
-    } else {
-      DF <- WTEMP
-    }
+    DF <- switch(EXPER,
+                 "salinity" = WSALT,
+                 "temperature" = WTEMP,
+                 "cryptica" = CSALT )
+    
+#     if (EXPER=="salinity") {
+#       DF <- WSALT
+#     } else {
+#       DF <- WTEMP
+#     }
     return(DF)
   })
   
@@ -298,18 +307,18 @@ shinyServer(function(input, output, session) {
 getExpName3 <- reactive({
   COND <- switch(input$Experiment3,
                  "1" = "salinity",
-                 "2" = "temperature")
+                 "2" = "temperature", 
+                 "3" = "cryptica")
   return(COND)
 })
 
 # choose experiment
 whichExperiment3 <- reactive({
   EXPER <- getExpName3()
-  if (EXPER=="salinity") {
-    DF <- WSALTslopes
-  } else {
-    DF <- WTEMPslopes
-  }
+  DF <- switch(EXPER,
+               "salinity" = WSALTslopes,
+               "temperature" = WTEMPslopes,
+               "cryptica" = CSALTslopes )
   return(DF)
 })
 
@@ -357,11 +366,11 @@ pl3.1 <- reactive({
   ENV3 <- environment()
   plotMeanSlopes <- ggplot(data = DF3, environment=ENV3, aes(x=Treatment, y=Mean, fill=Treatment)) + 
     geom_bar(stat="identity", data=DF3, width=.8, colour="black") +
-    geom_errorbar(aes(ymin=Mean-SD, ymax=Mean+SD), width=.2, data = DF3) +
+    geom_errorbar(aes(ymin=Mean-(1.96 * SD/3), ymax=Mean+(1.96 * SD/3)), width=.2, data = DF3) +
     scale_fill_brewer(palette="Blues") + #, name="Salinity") +
     facet_grid(. ~ Strain) +
     theme_bw() +
-    ggtitle("Mean growth rate across Transfer and Replicates over the last 3 Transfers at different salinities. Error bars are mean +- 1 standard deviation.") +
+    ggtitle("Mean growth rate (+- 95% confidence interval, n=9) across Transfer and Replicates over the last 3 Transfers at different salinities.") +
     ylab("Mean growth rate (slope)") #+
     #ylim(min(DF3$Mean)-0.1,1) 
   return(plotMeanSlopes)

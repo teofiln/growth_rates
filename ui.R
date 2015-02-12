@@ -25,8 +25,11 @@ WTEMPsplit <- ALLDATA[[2]]
 WTEMP <- ALLDATA[[3]]
 WSALTsplit <- ALLDATA[[4]]
 WSALT <- ALLDATA[[5]]
-WTEMPslope <- ALLDATA[[6]]
-WSALTslope <- ALLDATA[[7]]
+WTEMPslopes <- ALLDATA[[6]]
+WSALTslopes <- ALLDATA[[7]]
+CSALT <- ALLDATA[[8]]
+CSALTsplit <- ALLDATA[[9]]
+CSALTslopes <- ALLDATA[[10]]
 
 shinyUI(fluidPage(theme = shinytheme("flatly"),
   
@@ -54,7 +57,7 @@ shinyUI(fluidPage(theme = shinytheme("flatly"),
                        sidebarPanel(width = 2,
                                     radioButtons("Experiment2",
                                                  label = h4("Experiment"),
-                                                 choices = list("salinity" = 1, "temperature" = 2),
+                                                 choices = list("salinity" = 1, "temperature" = 2, "cryptica" = 3),
                                                  selected = 1),
                                     
                                     uiOutput("whichSelectInput")
@@ -75,7 +78,7 @@ shinyUI(fluidPage(theme = shinytheme("flatly"),
                        sidebarPanel(width = 2,
                                     radioButtons("Experiment3",
                                                  label = h4("Experiment"),
-                                                 choices = list("salinity" = 1, "temperature" = 2),
+                                                 choices = list("salinity" = 1, "temperature" = 2, "cryptica" = 3),
                                                  selected = 1),
                                     
                                     uiOutput("whichCheckBoxInput3")#,
