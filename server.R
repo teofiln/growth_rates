@@ -62,11 +62,11 @@ shinyServer(function(input, output, session) {
                      checkboxGroupInput("Strain",
                                         label = h4("Strain"),
                                         choices = levels(droplevels(DAT[DAT$Experiment==COND,]$Strain)), 
-                                        selected = levels(droplevels(DAT[DAT$Experiment==COND,]$Strain))[1:2]),
+                                        selected = levels(droplevels(DAT[DAT$Experiment==COND,]$Strain))[1:5]),
                      checkboxGroupInput("Treatment",
                                         label = h4("Treatment"),
                                         choices = levels(droplevels(DAT[DAT$Experiment==COND,]$Treatment)), 
-                                        selected = levels(droplevels(DAT[DAT$Experiment==COND,]$Treatment))[1:2]),
+                                        selected = levels(droplevels(DAT[DAT$Experiment==COND,]$Treatment))[1:5]),
                      sliderInput("Transfer", 
                                  label = h4("Transfer Range"), 
                                  min = min(DAT[DAT$Experiment==COND,]$Transfer), 
@@ -181,7 +181,13 @@ shinyServer(function(input, output, session) {
                                       max(DF$Transfer)), ticks=TRUE),
                 selectInput(inputId = "switchPlot", label = h4("Faceted or superimposed"),
                             choices = list("Faceted" = 1, "Superimposed" = 2),
-                            selected = 1)
+                            selected = 1),
+                sliderInput("aspect_ratio2", 
+                            label = h4("Aspect ratio"), 
+                            min = 0, 
+                            max = 10, 
+                            value = 1, 
+                            ticks=TRUE)
     )
   return(out)
   })
@@ -252,11 +258,15 @@ shinyServer(function(input, output, session) {
 
   pl2 <- reactive({
     if (input$switchPlot == 1) {
-      plot <- pl2.1()
+      plot <- pl2.1() + coord_fixed(ratio=input$aspect_ratio2) 
     } else {
-      plot <- pl2.2()
+      plot <- pl2.2() + coord_fixed(ratio=input$aspect_ratio2)
     }
     return(plot)
+  })
+
+  output$Plot2 <- renderPlot({  
+    pl2() + coord_fixed(ratio=input$aspect_ratio2)
   })
 
   # render an analysis of variance table
@@ -275,18 +285,6 @@ shinyServer(function(input, output, session) {
     Table <- cbind(Table, explanation)
     return(Table)
   })
-
-  output$Plot2 <- renderPlot({
-    pl2()
-  })
-
-#   output$Plot2.1 <- renderPlot({
-#     pl2.1()
-#   })
-# 
-#   output$Plot2.2 <- renderPlot({
-#     pl2.2()
-#   })
 
   output$TableAOV <- renderTable({
     tb1()#[c(1,4,5,7,8),]
@@ -370,7 +368,7 @@ pl3.1 <- reactive({
     scale_fill_brewer(palette="Blues") + #, name="Salinity") +
     facet_grid(. ~ Strain) +
     theme_bw() +
-    ggtitle("Mean growth rate (+- 95% confidence interval, n=9) across Transfer and Replicates over the last 3 Transfers at different salinities.") +
+    ggtitle("Mean growth rate (+- 95% confidence interval, n=9) across Transfers and Replicates over the last 3 Transfers at different salinities.") +
     ylab("Mean growth rate (slope)") #+
     #ylim(min(DF3$Mean)-0.1,1) 
   return(plotMeanSlopes)
