@@ -193,6 +193,49 @@ slopesCSalt <- ddply(.data=CSALT,
 # ANCOVAS FOR CRYPTICA END #
 ############################
 
+#############################################################
+# Prep flasks data and familiarizing period of waller creek #
+#############################################################
+
+Wfami <- mutate(.data=Wfami,
+                Rep=factor(Replicate),
+                seqRep=factor(Transfer),
+                Transfer=as.numeric(Transfer), 
+                Treatment=factor(Treatment),
+                Temperature=factor(Temperature),
+                Media=factor(Media),
+                Experiment=factor(Experiment),
+                Strain=factor(Strain),
+                lnRF=log(RF-Rfctrl),
+                trDay=as.integer((Hour/24)+1))
+
+Wflas <- mutate(.data=Wflas,
+                Rep=factor(Replicate),
+                seqRep=factor(Transfer),
+                Transfer=as.numeric(Transfer), 
+                Treatment=factor(Treatment),
+                Temperature=factor(Temperature),
+                Media=factor(Media),
+                Experiment=factor(Experiment),
+                Strain=factor(Strain),
+                lnRF=log(RF-Rfctrl),
+                trDay=as.integer((Hour/24)+1))
+
+Wflas2 <- mutate(.data=Wflas2,
+                Rep=factor(Replicate),
+                seqRep=factor(Transfer),
+                Transfer=as.numeric(Transfer), 
+                Treatment=factor(Treatment),
+                Temperature=factor(Temperature),
+                Media=factor(Media),
+                Experiment=factor(Experiment),
+                Strain=factor(Strain),
+                lnRF=log(RF-Rfctrl),
+                trDay=as.integer((Hour/24)+1))
+
+#############################################################
+# END  flasks data and familiarizing period of waller creek #
+#############################################################
 
 return(list(DAT, 
             WTEMPsplit, 
@@ -203,6 +246,9 @@ return(list(DAT,
             slopesSalt, 
             CSALT, 
             CSALTsplit, 
-            slopesCSalt))
+            slopesCSalt,
+            Wflas,
+            Wflas2,
+            Wfami))
 
 } # end function
