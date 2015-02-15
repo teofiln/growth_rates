@@ -70,7 +70,7 @@ last3t <- max(WTEMP$Transfer) - 2
 WTEMPlast3 <- WTEMP[which(WTEMP$Transfer > last3t), ]
 
 # ddply getting slope for each case
-slopesTemp <- ddply(.data=WTEMPlast3, 
+slopesTemp <- ddply(.data=WTEMP, 
                     .variables=.(Strain, Treatment, seqRep, Rep),
                     .fun=getSlope)
 
@@ -138,11 +138,10 @@ for (i in 1:ncol(wsaltPredict)) {WSALTsplit[[i]]$pred <- wsaltPredict[,i]}
 # get slopes for Transfer > 2 
 # assuming 'acclimation'
 last3 <- max(WSALT$Transfer) - 2
-
 WSALTlast3 <- WSALT[which(WSALT$Transfer > last3), ]
 
 # ddply getting slope for each case
-slopesSalt <- ddply(.data=WSALTlast3, 
+slopesSalt <- ddply(.data=WSALT, 
                     .variables=.(Strain, Treatment, seqRep, Rep),
                     .fun=getSlope)
 
@@ -183,11 +182,10 @@ for (i in 1:ncol(CSALTPredict)) {CSALTsplit[[i]]$pred <- CSALTPredict[,i]}
 # get slopes for the last 3 Transfers
 # assuming 'acclimation'
 last3c <- max(CSALT$Transfer) - 2
-
 CSALTlast3 <- CSALT[which(CSALT$Transfer > last3c), ]
 
 # ddply getting slope for each case
-slopesCSalt <- ddply(.data=CSALTlast3, 
+slopesCSalt <- ddply(.data=CSALT, 
                     .variables=.(Strain, Treatment, seqRep, Rep),
                     .fun=getSlope)
 
