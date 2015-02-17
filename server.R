@@ -170,7 +170,10 @@ shinyServer(function(input, output, session) {
                             min = 0, 
                             max = 10, 
                             value = 1, 
-                            ticks=TRUE)
+                            ticks=TRUE),
+                checkboxInput("confidence_region", 
+                              label = h4("Confidence region"),
+                              value = FALSE)
     )
   return(out)
   })
@@ -226,14 +229,11 @@ shinyServer(function(input, output, session) {
                              )) +
       geom_smooth(aes(y=PRED, linetype=Rep),#, ymin=LSE, ymax=USE, fill=seqRep), 
                   data = DF2, method="lm", stat="identity", fullrange=TRUE, se=FALSE) +
-      #geom_smooth(method="lm", data=DF2, aes(linetype=Rep, ), se=TRUE, fullrange=TRUE) +
       geom_point() +
-      #facet_grid(. ~ seqRep) +
-      #geom_line(aes(y=pred, linetype=Rep), data = DF2) +
       theme_bw() +
-      ggtitle(paste("Slopes of", input$chooseStrain, "at", input$chooseTreatment,
-                    "ppt. Shaded region corresponds to predicted value +- standard error.",
-                    sep=' '))
+      ggtitle(paste("Slopes and confidence region of ", 
+                    input$chooseStrain, "at", 
+                    input$chooseTreatment, "ppt.",  sep=' '))
       return(plotANCOVA)
   })
 
@@ -246,7 +246,8 @@ shinyServer(function(input, output, session) {
     return(plot)
   })
 
-  output$Plot2 <- renderPlot({  
+  output$Plot2 <- renderPlot({
+    #if (input$confidence_region == TRUE)
     pl2() + coord_fixed(ratio=input$aspect_ratio2)
   })
 
