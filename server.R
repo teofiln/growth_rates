@@ -315,7 +315,8 @@ output$whichCheckBoxInput3 <- renderUI({
               radioButtons(inputId = "chooseMeasure3", label = h4("Measure"),
                            choices = list("Growth rate" = 1,
                                           "Divisions per day" = 2,
-                                          "Doubling time" = 3 ),
+                                          "Doubling time" = 3 
+                                          ),
                            selected = 1),
               sliderInput(inputId = "Transfer3", label = h4("Transfer Range"), 
                           min = min(as.numeric(DF$seqRep)), 
@@ -342,22 +343,24 @@ getMean <- reactive({
   meanSlopes <- ddply(.data=DF3,
                       .variables=.(Strain, Treatment),
                       .fun=meanNsd)
+  meanSlopes$Mean[which(meanSlopes$Mean < 0)] <- NA
+  
   out <- mutate(meanSlopes,
                 K = Mean/log(2),
                 sdK = SD/log(2),
                 T2 = log(2)/Mean,
-                sdT2 = log(2)/SD )
+                sdT2 =  SD + T2)
   return(out)
 })
 
 getData <- reactive({
   DAT <- getMean()
   out3 <- switch(input$chooseMeasure3,
-                "1" = DAT[,1:5],
-                "2" = DAT[,c(1:3,6:7)],
-                "3" = DAT[,c(1:3,8:9)] 
+                "1" = DAT[,1:4],
+                "2" = DAT[,c(1:2,5:6)],
+                "3" = DAT[,c(1:2,7:8)] 
                 )
-  colnames(out3) <- c("Strain", "Treatment", "seqRep", "MEAN", "SD")
+  colnames(out3) <- c("Strain", "Treatment", "MEAN", "SD")
   return(out3)
 })
 
