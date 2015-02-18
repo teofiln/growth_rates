@@ -312,11 +312,16 @@ output$whichCheckBoxInput3 <- renderUI({
               checkboxGroupInput(inputId = "chooseTreatment3", label = h4("Treatment"),
                           choices = levels(DF$Treatment),
                           selected = levels(DF$Treatment)[1:5]),
-              sliderInput(inputId = "Transfer3", label = h3("Transfer Range"), 
+              radioButtons(inputId = "chooseMeasure3", label = h4("Measure"),
+                           choices = list("Growth rate" = 1,
+                                          "Divisions per day" = 2,
+                                          "Doubling time" = 3 ),
+                           selected = 1),
+              sliderInput(inputId = "Transfer3", label = h4("Transfer Range"), 
                           min = min(as.numeric(DF$seqRep)), 
                           max = max(as.numeric(DF$seqRep)), 
                           value = c(min(as.numeric(DF$seqRep)), 
-                                    max(as.numeric(DF$seqRep)) )),
+                                    max(as.numeric(DF$seqRep)) ) ),
               selectInput(inputId = "switchPlot3", label = h4("Facet by:"),
                           choices = list("Strain" = 1, "Treatment" = 2),
                           selected = 1)
@@ -337,31 +342,46 @@ getMean <- reactive({
   meanSlopes <- ddply(.data=DF3,
                       .variables=.(Strain, Treatment),
                       .fun=meanNsd)
-  return(meanSlopes)
+  out <- mutate(meanSlopes,
+                K = Mean/log(2),
+                sdK = SD/log(2),
+                T2 = log(2)/Mean,
+                sdT2 = log(2)/SD )
+  return(out)
+})
+
+getData <- reactive({
+  DAT <- getMean()
+  out3 <- switch(input$chooseMeasure3,
+                "1" = DAT[,1:5],
+                "2" = DAT[,c(1:3,6:7)],
+                "3" = DAT[,c(1:3,8:9)] 
+                )
+  colnames(out3) <- c("Strain", "Treatment", "seqRep", "MEAN", "SD")
+  return(out3)
 })
 
 # plot the mean slopes (growth rates)
 pl3.a1 <- reactive({
-  DF3 <- getMean()
+  DF3 <- getData()
   ENV3 <- environment()
-  plotMeanSlopes <- ggplot(data = DF3, environment=ENV3, aes(x=Treatment, y=Mean, fill=Treatment)) + 
+  plotMeanSlopes <- ggplot(data = DF3, environment=ENV3, aes(x=Treatment, y=MEAN, fill=Treatment)) + 
     geom_bar(stat="identity", data=DF3, width=.8, colour="black") +
-    geom_errorbar(aes(ymin=Mean-SD, ymax=Mean+SD), width=.2, data = DF3) +
+    geom_errorbar(aes(ymin=MEAN-SD, ymax=MEAN+SD), width=.2, data = DF3) +
     scale_fill_brewer(palette="Blues") + #, name="Salinity") +
     facet_grid(. ~ Strain) +
     theme_bw() +
     ggtitle("Mean growth rate (+- SD) across Transfers and Replicates at different salinities.") +
-    ylab("Mean growth rate (slope)") #+
-   # ylim(0,1) 
+    ylab("Mean growth rate (slope)") 
   return(plotMeanSlopes)
   
 })
 
 # plot the coefficient of variation of the growth rate
 pl3.a2 <- reactive({
-  DF3 <- getMean()
+  DF3 <- getData()
   ENV3 <- environment()
-  plotCV <- ggplot(data = DF3, environment=ENV3, aes(x=Treatment, y=abs(SD/Mean), fill=Treatment)) + 
+  plotCV <- ggplot(data = DF3, environment=ENV3, aes(x=Treatment, y=abs(SD/MEAN), fill=Treatment)) + 
     geom_bar(stat="identity", data=DF3, width=.8, colour="black") +
     scale_fill_brewer(palette="Blues") + #, name="Salinity") +
     facet_grid(. ~ Strain) +
@@ -375,11 +395,11 @@ pl3.a2 <- reactive({
 
 # plot the mean slopes (growth rates)
 pl3.b1 <- reactive({
-  DF3 <- getMean()
+  DF3 <- getData()
   ENV3 <- environment()
-  plotMeanSlopes <- ggplot(data = DF3, environment=ENV3, aes(x=Strain, y=Mean, fill=Treatment)) + 
+  plotMeanSlopes <- ggplot(data = DF3, environment=ENV3, aes(x=Strain, y=MEAN, fill=Treatment)) + 
     geom_bar(stat="identity", data=DF3, width=.8, colour="black") +
-    geom_errorbar(aes(ymin=Mean-SD, ymax=Mean+SD), width=.2, data = DF3) +
+    geom_errorbar(aes(ymin=MEAN-SD, ymax=MEAN+SD), width=.2, data = DF3) +
     scale_fill_brewer(palette="Blues") + #, name="Salinity") +
     facet_grid(. ~ Treatment) +
     theme_bw() +
@@ -392,9 +412,9 @@ pl3.b1 <- reactive({
 
 # plot the coefficient of variation of the growth rate
 pl3.b2 <- reactive({
-  DF3 <- getMean()
+  DF3 <- getData()
   ENV3 <- environment()
-  plotCV <- ggplot(data = DF3, environment=ENV3, aes(x=Strain, y=abs(SD/Mean), fill=Treatment)) + 
+  plotCV <- ggplot(data = DF3, environment=ENV3, aes(x=Strain, y=abs(SD/MEAN), fill=Treatment)) + 
     geom_bar(stat="identity", data=DF3, width=.8, colour="black") +
     scale_fill_brewer(palette="Blues") + #, name="Salinity") +
     facet_grid(. ~ Treatment) +
