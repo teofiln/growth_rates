@@ -63,19 +63,19 @@ shinyServer(function(input, output, session) {
   # for choosing the case within an experiment
   output$whichSelectInput1 <- renderUI({
     DF <- whichExperiment1()
-    out <- list(checkboxGroupInput(inputId = "chooseStrain1", label = h4("Strain"),
+    out <- list(checkboxGroupInput(inputId = "chooseStrain1", label = h5("Strain"),
                             choices = levels(DF$Strain),
                             selected = levels(DF$Strain)[1:5]),
-                checkboxGroupInput(inputId = "chooseTreatment1", label = h4("Treatment"),
+                checkboxGroupInput(inputId = "chooseTreatment1", label = h5("Treatment"),
                             choices = levels(DF$Treatment),
                             selected = levels(DF$Treatment)[1:5]),
-                sliderInput(inputId = "Transfer1", label = h4("Transfer Range"), 
+                sliderInput(inputId = "Transfer1", label = h5("Transfer Range"), 
                             min = min(DF$Transfer), 
                             max = max(DF$Transfer), 
                             value = c(min(DF$Transfer), 
                                       max(DF$Transfer)), ticks=TRUE),
                 sliderInput("aspect_ratio1", 
-                            label = h4("Aspect ratio"), 
+                            label = h5("Aspect ratio"), 
                             min = 0, 
                             max = 10, 
                             value = 10, 
@@ -151,28 +151,28 @@ shinyServer(function(input, output, session) {
   # for choosing the case within an experiment
   output$whichSelectInput <- renderUI({
     DF <- whichExperiment2()
-    out <- list(selectInput(inputId = "chooseStrain", label = h4("Strain"),
+    out <- list(selectInput(inputId = "chooseStrain", label = h5("Strain"),
                             choices = levels(DF$Strain),
                             selected = levels(DF$Strain)[1]),
-                selectInput(inputId = "chooseTreatment", label = h4("Treatment"),
+                selectInput(inputId = "chooseTreatment", label = h5("Treatment"),
                             choices = levels(DF$Treatment),
                             selected = levels(DF$Treatment)[1]),
-                sliderInput(inputId = "Transfer2", label = h4("Transfer Range"), 
+                sliderInput(inputId = "Transfer2", label = h5("Transfer Range"), 
                             min = min(DF$Transfer), 
                             max = max(DF$Transfer), 
                             value = c(min(DF$Transfer), 
                                       max(DF$Transfer)), ticks=TRUE),
-                selectInput(inputId = "switchPlot", label = h4("Faceted or superimposed"),
+                selectInput(inputId = "switchPlot", label = h5("Faceted or superimposed"),
                             choices = list("Faceted" = 1, "Superimposed" = 2),
                             selected = 1),
                 sliderInput("aspect_ratio2", 
-                            label = h4("Aspect ratio"), 
+                            label = h5("Aspect ratio"), 
                             min = 0, 
                             max = 10, 
                             value = 1, 
                             ticks=TRUE),
-                checkboxInput("confidence_region", 
-                              label = h4("Confidence region"),
+                checkboxInput("removeDay0", 
+                              label = h5("Remove Day 0?"),
                               value = FALSE)
     )
   return(out)
@@ -183,7 +183,11 @@ shinyServer(function(input, output, session) {
     DF <- whichExperiment2()
     DF <- DF[which(DF$Strain == input$chooseStrain & DF$Treatment == input$chooseTreatment), ]
     DF <- DF[which(DF$Transfer >= input$Transfer2[1] & DF$Transfer <= input$Transfer2[2]), ]
-    DF <- DF[- which(DF$Hour == 0), ]
+ 
+    if (input$removeDay0 == TRUE) {
+      DF <- DF[- which(DF$Hour == 0), ]
+    } 
+    
     return(DF)
   })
   
@@ -212,7 +216,8 @@ shinyServer(function(input, output, session) {
                          geom_smooth(aes(y=PRED),#, ymin=LSE, ymax=USE, fill=Rep),
                                      data = DF2, stat="identity", se=FALSE) +
                          theme_bw() +
-                         ggtitle(paste("Slopes of", input$chooseStrain, "at", input$chooseTreatment,
+                         ggtitle(paste("Slopes of", input$chooseStrain, 
+                                       "at", input$chooseTreatment,
                                        "ppt. Shaded region corresponds to predicted value +- standard error.",
                                        sep=' '))
     return(plotANCOVA)
@@ -306,24 +311,24 @@ whichExperiment3 <- reactive({
 # for choosing the case within an experiment
 output$whichCheckBoxInput3 <- renderUI({
   DF <- whichExperiment3()
-  out <- list(checkboxGroupInput(inputId = "chooseStrain3", label = h4("Strain"),
+  out <- list(checkboxGroupInput(inputId = "chooseStrain3", label = h5("Strain"),
                           choices = levels(DF$Strain),
                           selected = levels(DF$Strain)[1:5]),
-              checkboxGroupInput(inputId = "chooseTreatment3", label = h4("Treatment"),
+              checkboxGroupInput(inputId = "chooseTreatment3", label = h5("Treatment"),
                           choices = levels(DF$Treatment),
                           selected = levels(DF$Treatment)[1:5]),
-              radioButtons(inputId = "chooseMeasure3", label = h4("Measure"),
+              radioButtons(inputId = "chooseMeasure3", label = h5("Measure"),
                            choices = list("Growth rate" = 1,
                                           "Divisions per day" = 2,
                                           "Doubling time" = 3 
                                           ),
                            selected = 1),
-              sliderInput(inputId = "Transfer3", label = h4("Transfer Range"), 
+              sliderInput(inputId = "Transfer3", label = h5("Transfer Range"), 
                           min = min(as.numeric(DF$seqRep)), 
                           max = max(as.numeric(DF$seqRep)), 
                           value = c(min(as.numeric(DF$seqRep)), 
                                     max(as.numeric(DF$seqRep)) ) ),
-              selectInput(inputId = "switchPlot3", label = h4("Facet by:"),
+              selectInput(inputId = "switchPlot3", label = h5("Facet by:"),
                           choices = list("Strain" = 1, "Treatment" = 2),
                           selected = 1)
   )
@@ -475,23 +480,23 @@ whichExperiment4 <- reactive({
 # for choosing the case within an experiment
 output$whichCheckBoxInput4 <- renderUI({
   DF <- whichExperiment4()
-  out <- list(checkboxGroupInput(inputId = "chooseStrain4", label = h4("Strain"),
+  out <- list(checkboxGroupInput(inputId = "chooseStrain4", label = h5("Strain"),
                                  choices = levels(DF$Strain),
                                  selected = levels(DF$Strain)[1:5]),
-              checkboxGroupInput(inputId = "chooseTreatment4", label = h4("Treatment"),
+              checkboxGroupInput(inputId = "chooseTreatment4", label = h5("Treatment"),
                                  choices = levels(DF$Treatment),
                                  selected = levels(DF$Treatment)[1:5]),
-              sliderInput(inputId = "Transfer4", label = h4("Transfer Range"), 
+              sliderInput(inputId = "Transfer4", label = h5("Transfer Range"), 
                           min = min(as.numeric(DF$seqRep)), 
                           max = max(as.numeric(DF$seqRep)), 
                           value = c(min(as.numeric(DF$seqRep)), 
                                     max(as.numeric(DF$seqRep)) ),
                           ticks=TRUE),
-              selectInput(inputId = "switchPlot4", label = h4("Facet by:"),
+              selectInput(inputId = "switchPlot4", label = h5("Facet by:"),
                           choices = list("Strain" = 1, "Treatment" = 2),
                           selected = 1),
               sliderInput("aspect_ratio4", 
-                          label = h4("Aspect ratio"), 
+                          label = h5("Aspect ratio"), 
                           min = 0, 
                           max = 10, 
                           value = 7, 

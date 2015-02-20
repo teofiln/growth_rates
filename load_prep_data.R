@@ -12,7 +12,6 @@ Csalt <- read.csv("./CSALT.csv", header=TRUE)
 
 # prepare the data
 DAT <- rbind(Wfami, Wsalt, Wtemp, Wflas, Wflas2, Csalt)
-DAT$Treatment[which(DAT$Treatment == "2")] <- "02"
 DAT <- mutate(.data=DAT, 
               Rep=factor(Replicate),
               seqRep=factor(Transfer),
@@ -30,6 +29,7 @@ DAT <- mutate(.data=DAT,
 ###########################
 
 # prep temperature trial data for ancova
+#Wtemp <- Wtemp[- which(Wtemp$Hour == 0), ]
 WTEMP <- mutate(.data=Wtemp,
                 Rep=factor(Replicate),
                 seqRep=factor(Transfer),
@@ -41,6 +41,9 @@ WTEMP <- mutate(.data=Wtemp,
                 Strain=factor(Strain),
                 lnRF=log(RF-Rfctrl),
                 trDay=as.integer((Hour/24)+1))
+
+# remove Day 0  (doesn't work)
+# WTEMP <- WTEMP[- which(WTEMP$Hour == 0), ]
 
 # ancova for temperature
 ANCOV <- function(x) { aov(data=x, formula=lnRF ~ trDay*seqRep*Rep, na.action=na.exclude)}
@@ -121,8 +124,12 @@ WSALT <- mutate(.data=Wsalt,
                 Strain=factor(Strain),
                 lnRF=log(RF-Rfctrl),
                 trDay=as.integer((Hour/24)+1))
+# remove Day 0 (doesn't work)
+#WSALT <- WSALT[- which(WSALT$Hour == 0), ]
 
-WSALT <- WSALT[-which(WSALT$seqRep == "F"),]
+# remove Transfer F (start and end data only)
+WSALT <- WSALT[- which(WSALT$seqRep == "F"),]
+
 # ancova for salinity
 wsaltAncovas <- dlply(.data = WSALT, .variables=.(Strain, Treatment), .fun=ANCOV)
 wsaltPredict <- ldply(.data = wsaltAncovas, .variables=.(Strain, Treatment), .fun=predict)
@@ -166,6 +173,9 @@ CSALT <- mutate(.data=Csalt,
                 Strain=factor(Strain),
                 lnRF=log(RF-Rfctrl),
                 trDay=as.integer((Hour/24)+1))
+
+# remove Day 0 (doesn't work)
+# CSALT <- CSALT[- which(CSALT$Hour == 0), ]
 
 # ancova for salinity
 CSALTAncovas <- dlply(.data = CSALT, .variables=.(Strain, Treatment), .fun=ANCOV)
