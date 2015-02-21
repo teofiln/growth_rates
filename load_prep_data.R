@@ -9,6 +9,7 @@ Wtemp <- read.csv("./WTEMP.csv", header=TRUE)
 Wflas <- read.csv("./WFLAS.csv", header=TRUE)
 Wflas2 <- read.csv("./WFLAS2.csv", header=TRUE)
 Csalt <- read.csv("./CSALT.csv", header=TRUE)
+Cflas <- read.csv("./CFLAS.csv")
 
 # prepare the data
 DAT <- rbind(Wfami, Wsalt, Wtemp, Wflas, Wflas2, Csalt)
@@ -243,6 +244,18 @@ Wflas2 <- mutate(.data=Wflas2,
                 lnRF=log(RF-Rfctrl),
                 trDay=as.integer((Hour/24)+1))
 
+Cflas <- mutate(.data=Cflas,
+                Rep=factor(Replicate),
+                seqRep=factor(Transfer),
+                Transfer=as.numeric(Transfer), 
+                Treatment=factor(Treatment),
+                Temperature=factor(Temperature),
+                Media=factor(Media),
+                Experiment=factor(Experiment),
+                Strain=factor(Strain),
+                lnRF=log(RF-Rfctrl),
+                trDay=as.integer((Hour/24)+1))
+
 #############################################################
 # END  flasks data and familiarizing period of waller creek #
 #############################################################
@@ -259,6 +272,7 @@ return(list(DAT,
             slopesCSalt,
             Wflas,
             Wflas2,
-            Wfami))
+            Wfami,
+            Cflas))
 
 } # end function

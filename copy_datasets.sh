@@ -9,3 +9,4 @@ cp ../Cwaller_2014-11-22/raw_data/FLASKS.csv WFLAS.csv
 cp ../Cwaller_2014-11-22/raw_data/FLASKS2.csv WFLAS2.csv
 cp ../Cwaller_2014-11-22/raw_data/FAMI.csv WFAMI.csv
 cp ../Cryptica_2015-01-21/raw_data/CSALT.csv CSALT.csv
+cp ../Cryptica_2015-01-21/raw_data/CRYPT_FLASKS.csv CFLAS.csv

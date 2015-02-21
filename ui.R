@@ -32,6 +32,7 @@ CSALTsplit <- ALLDATA[[9]]
 CSALTslopes <- ALLDATA[[10]]
 WFLAS <- ALLDATA[[11]]
 WFLAS2 <- ALLDATA[[12]]
+CFLAS <- ALLDATA[[14]]
 
 shinyUI(fluidPage(theme = shinytheme("flatly"),
   
@@ -43,11 +44,12 @@ shinyUI(fluidPage(theme = shinytheme("flatly"),
                          sidebarPanel(width = 2,
                                       radioButtons("Experiment1",
                                                    label = h4("Experiment"),
-                                                   choices = list("salinity" = 1, 
-                                                                  "temperature" = 2, 
-                                                                  "cryptica" = 3, 
-                                                                  "flask" = 4, 
-                                                                  "flask2" = 5),
+                                                   choices = list("C. wallercreekii tubes salinity" = 1, 
+                                                                  "C. wallercreekii tubes temperature" = 2, 
+                                                                  "C. cryptica tubes salinity" = 3, 
+                                                                  "C. wallercreekii flasks salinity" = 4, 
+                                                                  "C. wallercreekii flasks 2 salinity" = 5,
+                                                                  "C. cryptica flasks salinity" = 6),
                                                    selected = 1),
                                       
                                       uiOutput("whichSelectInput1")
@@ -63,7 +65,9 @@ shinyUI(fluidPage(theme = shinytheme("flatly"),
                        sidebarPanel(width = 2,
                                     radioButtons("Experiment2",
                                                  label = h4("Experiment"),
-                                                 choices = list("salinity" = 1, "temperature" = 2, "cryptica" = 3),
+                                                 choices = list("C. wallercreekii tubes salinity" = 1, 
+                                                                "C. wallercreekii tubes temperature" = 2, 
+                                                                "C. cryptica tubes salinity" = 3),
                                                  selected = 1),
                                     
                                     uiOutput("whichSelectInput")
@@ -84,7 +88,9 @@ shinyUI(fluidPage(theme = shinytheme("flatly"),
                        sidebarPanel(width = 2,
                                     radioButtons("Experiment4",
                                                  label = h4("Experiment"),
-                                                 choices = list("salinity" = 1, "temperature" = 2, "cryptica" = 3),
+                                                 choices = list("C. wallercreekii tubes salinity" = 1, 
+                                                                "C. wallercreekii tubes temperature" = 2, 
+                                                                "C. cryptica tubes salinity" = 3),
                                                  selected = 1),
                                     uiOutput("whichCheckBoxInput4")#,
                                     # actionButton("actionPlot3", "Plot")
@@ -100,7 +106,9 @@ shinyUI(fluidPage(theme = shinytheme("flatly"),
                        sidebarPanel(width = 2,
                                     radioButtons("Experiment3",
                                                  label = h4("Experiment"),
-                                                 choices = list("salinity" = 1, "temperature" = 2, "cryptica" = 3),
+                                                 choices = list("C. wallercreekii tubes salinity" = 1, 
+                                                                "C. wallercreekii tubes temperature" = 2, 
+                                                                "C. cryptica tubes salinity" = 3),
                                                  selected = 1),
                                     uiOutput("whichCheckBoxInput3")#,
                                    # actionButton("actionPlot3", "Plot")
