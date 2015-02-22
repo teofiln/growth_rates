@@ -41,7 +41,7 @@ shinyUI(fluidPage(theme = shinytheme("flatly"),
               
               tabPanel("Growth curves", value = "tab1",
                        sidebarLayout(
-                         sidebarPanel(width = 2,
+                         sidebarPanel(width = 3,
                                       radioButtons("Experiment1",
                                                    label = h4("Experiment"),
                                                    choices = list("C. wallercreekii tubes salinity" = 1, 
@@ -54,7 +54,7 @@ shinyUI(fluidPage(theme = shinytheme("flatly"),
                                       
                                       uiOutput("whichSelectInput1")
                                       ), # end sidebarPanel
-                         mainPanel(width = 10,
+                         mainPanel(width = 9,
                                    plotOutput('Plot1', height = 800)
                                    ) # end mainPanel
                          ) # end first sidebarLayot
@@ -85,7 +85,7 @@ shinyUI(fluidPage(theme = shinytheme("flatly"),
 
             tabPanel("Growth rates through time", value = "tab4",
                      sidebarLayout(
-                       sidebarPanel(width = 2,
+                       sidebarPanel(width = 3,
                                     radioButtons("Experiment4",
                                                  label = h4("Experiment"),
                                                  choices = list("C. wallercreekii tubes salinity" = 1, 
@@ -95,7 +95,7 @@ shinyUI(fluidPage(theme = shinytheme("flatly"),
                                     uiOutput("whichCheckBoxInput4")#,
                                     # actionButton("actionPlot3", "Plot")
                        ),
-                       mainPanel(width = 10,
+                       mainPanel(width = 9,
                                  plotOutput('Plot4', height = 800)
                        ) # end mainPanel
                      ) # end fourth sidebarPanel
@@ -103,7 +103,7 @@ shinyUI(fluidPage(theme = shinytheme("flatly"),
 
             tabPanel("Compare growth rates", value = "tab3",
                      sidebarLayout(
-                       sidebarPanel(width = 2,
+                       sidebarPanel(width = 3,
                                     radioButtons("Experiment3",
                                                  label = h4("Experiment"),
                                                  choices = list("C. wallercreekii tubes salinity" = 1, 
@@ -113,7 +113,7 @@ shinyUI(fluidPage(theme = shinytheme("flatly"),
                                     uiOutput("whichCheckBoxInput3")#,
                                    # actionButton("actionPlot3", "Plot")
                        ),
-                       mainPanel(width = 10,
+                       mainPanel(width = 9,
                                  plotOutput('Plot3', height = 800)#,
                                  #plotOutput('Plot3.2', height = 400)#,
                                  #tableOutput('TableAOV3')

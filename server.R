@@ -58,12 +58,15 @@ shinyServer(function(input, output, session) {
   # for subseting an experiment
   output$whichSelectInput1 <- renderUI({
     DF <- whichExperiment1()
-    out <- list(checkboxGroupInput(inputId = "chooseStrain1", label = h5("Strain"),
+    out <- list(checkboxGroupInput(inputId = "chooseStrain1", label = h5("Strain"), inline = TRUE,
                             choices = levels(DF$Strain),
                             selected = levels(DF$Strain)[1:5]),
-                checkboxGroupInput(inputId = "chooseTreatment1", label = h5("Treatment"),
+                checkboxGroupInput(inputId = "chooseTreatment1", label = h5("Treatment"), inline = TRUE,
                             choices = levels(DF$Treatment),
                             selected = levels(DF$Treatment)[1:5]),
+                checkboxGroupInput(inputId = "chooseReplicate1", label = h5("Replicate"), inline = TRUE,
+                                   choices = levels(DF$Rep),
+                                   selected = levels(DF$Rep)[1:3]),
                 sliderInput(inputId = "Transfer1", label = h5("Transfer Range"), 
                             min = min(DF$Transfer), 
                             max = max(DF$Transfer), 
@@ -84,7 +87,7 @@ shinyServer(function(input, output, session) {
   # in conditional panels
   whichSubset1 <- reactive({
     DF <- isolate( whichExperiment1() )
-    DF <- DF[which(DF$Strain %in% input$chooseStrain1 & DF$Treatment %in% input$chooseTreatment1), ]
+    DF <- DF[which(DF$Strain %in% input$chooseStrain1 & DF$Treatment %in% input$chooseTreatment1 & DF$Rep %in% input$chooseReplicate1), ]
     DF <- DF[which(DF$Transfer >= input$Transfer1[1] & DF$Transfer <= input$Transfer1[2]), ]
     return(DF)
   }) 
@@ -104,8 +107,6 @@ shinyServer(function(input, output, session) {
       xlab("Day") +  ylab("RFU (log10 scale)") +
       facet_grid(Strain ~ Treatment) +
       theme_bw() +
-      #ggtitle(paste(input$Strain, "at", input$Treatment, sep=" ")) +
-      #coord_trans(y="log10")
       scale_y_continuous(trans=log10_trans(), 
                          breaks = trans_breaks("log10", function(x) 10^x, n=3),
                          labels = trans_format("log10", math_format(10^.x))) 
@@ -298,10 +299,10 @@ shinyServer(function(input, output, session) {
   # for subseting the experiment
   output$whichCheckBoxInput4 <- renderUI({
     DF <- whichExperiment4()
-    out <- list(checkboxGroupInput(inputId = "chooseStrain4", label = h5("Strain"),
+    out <- list(checkboxGroupInput(inputId = "chooseStrain4", label = h5("Strain"), inline = TRUE,
                                    choices = levels(DF$Strain),
                                    selected = levels(DF$Strain)[1:5]),
-                checkboxGroupInput(inputId = "chooseTreatment4", label = h5("Treatment"),
+                checkboxGroupInput(inputId = "chooseTreatment4", label = h5("Treatment"), inline = TRUE,
                                    choices = levels(DF$Treatment),
                                    selected = levels(DF$Treatment)[1:5]),
                 sliderInput(inputId = "Transfer4", label = h5("Transfer Range"), 
@@ -427,10 +428,10 @@ whichExperiment3 <- reactive({
 # for subseting an experiment
 output$whichCheckBoxInput3 <- renderUI({
   DF <- whichExperiment3()
-  out <- list(checkboxGroupInput(inputId = "chooseStrain3", label = h5("Strain"),
+  out <- list(checkboxGroupInput(inputId = "chooseStrain3", label = h5("Strain"), inline = TRUE,
                                  choices = levels(DF$Strain),
                                  selected = levels(DF$Strain)[1:5]),
-              checkboxGroupInput(inputId = "chooseTreatment3", label = h5("Treatment"),
+              checkboxGroupInput(inputId = "chooseTreatment3", label = h5("Treatment"), inline = TRUE,
                                  choices = levels(DF$Treatment),
                                  selected = levels(DF$Treatment)[1:5]),
               radioButtons(inputId = "chooseMeasure3", label = h5("Measure"),
