@@ -358,7 +358,8 @@ shinyServer(function(input, output, session) {
       facet_wrap(~ Strain, nrow = 2) +
       geom_hline(aes(yintercept=0), size=0.3, linetype=3, colour="firebrick4") +
       theme_bw() +
-      ggtitle("Mean growth rate (+- 95% confidence interval, n=3) from technical Replicates over the course of the experiment.") +
+      ggtitle("Mean growth rate (+- 95% confidence interval, n=3) 
+              from technical Replicates over the course of the experiment.") +
       ylab("Mean growth rate (slope)") +
       xlab("Transfer (sequential replicate)")
     return(plotMeanSlopesThruTime)
@@ -381,7 +382,8 @@ shinyServer(function(input, output, session) {
       facet_wrap(~ Treatment, nrow = 2) +
       geom_hline(aes(yintercept=0), size=0.3, linetype=3, colour="firebrick4") +
       theme_bw() +
-      ggtitle("Mean growth rate (+- 95% confidence interval, n=3) from technical Replicates over the course of the experiment.") +
+      ggtitle("Mean growth rate (+- 95% confidence interval, n=3) 
+              from technical Replicates over the course of the experiment.") +
       ylab("Mean growth rate (slope)") +
       xlab("Transfer (sequential replicate)")
     return(plotMeanSlopesThruTime)
@@ -437,8 +439,7 @@ output$whichCheckBoxInput3 <- renderUI({
               radioButtons(inputId = "chooseMeasure3", label = h5("Measure"),
                            choices = list("Growth rate" = 1,
                                           "Divisions per day" = 2,
-                                          "Doubling time" = 3 
-                           ),
+                                          "Doubling time" = 3 ),
                            selected = 1),
               sliderInput(inputId = "Transfer3", label = h5("Transfer Range"), 
                           min = min(as.numeric(DF$seqRep)), 
@@ -484,8 +485,7 @@ getData <- reactive({
   out3 <- switch(input$chooseMeasure3,
                  "1" = DAT[,1:4],
                  "2" = DAT[,c(1:2,5:6)],
-                 "3" = DAT[,c(1:2,7:8)] 
-  )
+                 "3" = DAT[,c(1:2,7:8)] )
   colnames(out3) <- c("Strain", "Treatment", "MEAN", "SD")
   return(out3)
 })
@@ -518,11 +518,11 @@ pl3.a2 <- reactive({
     scale_fill_brewer(palette="Blues") + #, name="Salinity") +
     facet_grid(. ~ Strain) +
     theme_bw() +
-    ggtitle("Coefficient of variation (|SD/Mean|) as a measure of the variability around the mean growth rate across Transfers and Replicates.") +
+    ggtitle("Coefficient of variation (|SD/Mean|) as a measure of 
+            the variability around the mean growth rate across Transfers and Replicates.") +
     ylab("|Coefficient of variation|") #+
   #ylim(0,max(abs(DF3$SD/DF3$Mean))+0.02) 
   return(plotCV)
-  
 }) 
 
 # plot
@@ -554,7 +554,8 @@ pl3.b2 <- reactive({
     scale_fill_brewer(palette="Blues") + #, name="Salinity") +
     facet_grid(. ~ Treatment) +
     theme_bw() +
-    ggtitle("Coefficient of variation (|SD/Mean|) as a measure of the variability around the mean growth rate across Transfers and Replicates.") +
+    ggtitle("Coefficient of variation (|SD/Mean|) as a measure of 
+            the variability around the mean growth rate across Transfers and Replicates.") +
     ylab("|Coefficient of variation|") #+
   #ylim(0,max(abs(DF3$SD/DF3$Mean))+0.02) 
   return(plotCV)
