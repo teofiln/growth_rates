@@ -7,6 +7,7 @@ library(HH)
 library(nlme)
 library(car)
 library(shinythemes)
+library(RColorBrewer)
 
 # update the datasets 
 # creates symbolic links from original files in different folder
