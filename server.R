@@ -32,8 +32,7 @@ WFLAS <- ALLDATA[[11]]
 WFLAS2 <- ALLDATA[[12]]
 CFLAS <- ALLDATA[[14]]
 
-# get mean, SD
-# helper
+# helper to get mean, SD
 meanNsd <- function(x) { c(Mean=mean(x$trDay, na.rm=TRUE), SD=sd(x$trDay, na.rm=TRUE)) }
 
 shinyServer(function(input, output, session) {
@@ -122,7 +121,6 @@ shinyServer(function(input, output, session) {
 ##############################################
 ##          end of first tab                ##
 ##############################################
-  
   
 ##############################################
 ##          start of second tab             ##
