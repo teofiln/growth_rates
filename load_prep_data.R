@@ -48,8 +48,14 @@ Wflas <- MUTATE(Wflas)
 Wflas2 <- MUTATE(Wflas2)
 Cflas <- MUTATE(Cflas)
 # this combined dataset not used in app anymore
+<<<<<<< HEAD
 #DAT <- rbind(Wfami, Wsalt, Wtemp, Wflas, Wflas2, Csalt)
 #DAT <- MUTATE(DAT)
+=======
+# DAT <- rbind(Wfami, Wsalt, Wtemp, Wflas, Wflas2, Csalt)
+# DAT <- MUTATE(DAT)
+DAT <- NULL
+>>>>>>> 7df895e23cacd1346d3c09062789b582fe0711ad
 
 ###########################
 # ANCOVAS FOR TEMPERATURE #
