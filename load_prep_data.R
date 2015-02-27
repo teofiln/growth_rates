@@ -51,6 +51,9 @@ Cflas <- MUTATE(Cflas)
 # DAT <- rbind(Wfami, Wsalt, Wtemp, Wflas, Wflas2, Csalt)
 # DAT <- MUTATE(DAT)
 DAT <- NULL
+# DAT <- rbind(Wfami, Wsalt, Wtemp, Wflas, Wflas2, Csalt)
+# DAT <- MUTATE(DAT)
+DAT <- NULL
 
 ###########################
 # ANCOVAS FOR TEMPERATURE #
