@@ -108,7 +108,7 @@ shinyServer(function(input, output, session) {
       geom_line(size=0.6) +
       geom_point(size=3) +
       geom_hline(aes(yintercept=10000), size=0.3, linetype=3, colour="firebrick4") +
-      xlab("Day") +  ylab("RFU (log10 scale)") +
+      xlab("Day") +  #ylab("RFU (log10 scale)") +
       facet_grid(Strain ~ Treatment) +
       theme_bw() #+
 #       scale_y_continuous(trans=log10_trans(), 
@@ -120,12 +120,12 @@ shinyServer(function(input, output, session) {
   # render along with control for aspect ratio
   output$Plot1 <- renderPlot({
     if (input$logScale==TRUE)  {
-    pl1() + coord_fixed(ratio=input$aspect_ratio1) +
+    pl1() + coord_fixed(ratio=input$aspect_ratio1) + ylab("RFU (log10 scale)") +
              scale_y_continuous(trans=log10_trans(), 
                                 breaks = trans_breaks("log10", function(x) 10^x, n=3),
                                 labels = trans_format("log10", math_format(10^.x))) 
     } else {
-      pl1() + coord_fixed(ratio=0.001)
+      pl1() + coord_fixed(ratio=0.001)  + ylab("RFU")
     }
   })
     
