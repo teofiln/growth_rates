@@ -1,10 +1,5 @@
 library(shiny)
 library(shinythemes)
-library(ggplot2)
-library(gridExtra)
-library(plyr)
-library(scales)
-library(HH)
 
 # get a named list of the active experiments 
 # not used
@@ -14,34 +9,18 @@ library(HH)
 # update the datasets 
 # creates symbolic links from original files in different folder
 # will work only localy
+# not used
 #system("./update_datasets.sh")
 #system("./copy_datasets.sh")
 
-source("./load_prep_data.R")
-ALLDATA <- load_prep_data()
-
-DAT <- ALLDATA[[1]]
-WTEMPsplit <- ALLDATA[[2]]
-WTEMP <- ALLDATA[[3]]
-WSALTsplit <- ALLDATA[[4]]
-WSALT <- rbind(ALLDATA[[13]], ALLDATA[[5]])
-WTEMPslopes <- ALLDATA[[6]]
-WSALTslopes <- ALLDATA[[7]]
-CSALT <- ALLDATA[[8]]
-CSALTsplit <- ALLDATA[[9]]
-CSALTslopes <- ALLDATA[[10]]
-WFLAS <- ALLDATA[[11]]
-WFLAS2 <- ALLDATA[[12]]
-CFLAS <- ALLDATA[[14]]
-
 shinyUI(fluidPage(theme = shinytheme("flatly"),
   
-  titlePanel(h4("Salinity experiments")),
-  tabsetPanel(position = "above", id = "tabsets",
+  titlePanel(h4("Cyclotella salinity experiments")),
+  tabsetPanel(id = "tabsets",
               
               tabPanel("Growth curves", value = "tab1",
-                       sidebarLayout(
-                         sidebarPanel(width = 3,
+                       sidebarLayout(fluid = TRUE,
+                         sidebarPanel(width = 4,
                                       radioButtons("Experiment1",
                                                    label = h4("Experiment"),
                                                    choices = list("C. wallercreekii tubes salinity" = 1, 
@@ -54,7 +33,7 @@ shinyUI(fluidPage(theme = shinytheme("flatly"),
                                       
                                       uiOutput("whichSelectInput1")
                                       ), # end sidebarPanel
-                         mainPanel(width = 9,
+                         mainPanel(width = 8,
                                    plotOutput('Plot1', height = 800)
                                    ) # end mainPanel
                          ) # end first sidebarLayot
@@ -75,17 +54,13 @@ shinyUI(fluidPage(theme = shinytheme("flatly"),
                        mainPanel(width = 10,
                                  plotOutput('Plot2', height = 500),
                                  tableOutput('TableAOV')
-#                                  fluidRow(
-#                                    column(4, plotOutput('Plot2.2', height = 400)),
-#                                    column(8, tableOutput('TableAOV'))
-#                                  )
                                  ) # end mainPanel
                        ) # end second sidebarPanel
                      ), # end second tab
 
             tabPanel("Growth rates through time", value = "tab4",
                      sidebarLayout(
-                       sidebarPanel(width = 3,
+                       sidebarPanel(width = 4,
                                     radioButtons("Experiment4",
                                                  label = h4("Experiment"),
                                                  choices = list("C. wallercreekii tubes salinity" = 1, 
@@ -93,9 +68,8 @@ shinyUI(fluidPage(theme = shinytheme("flatly"),
                                                                 "C. cryptica tubes salinity" = 3),
                                                  selected = 1),
                                     uiOutput("whichCheckBoxInput4")#,
-                                    # actionButton("actionPlot3", "Plot")
                        ),
-                       mainPanel(width = 9,
+                       mainPanel(width = 8,
                                  plotOutput('Plot4', height = 800)
                        ) # end mainPanel
                      ) # end fourth sidebarPanel
@@ -103,7 +77,7 @@ shinyUI(fluidPage(theme = shinytheme("flatly"),
 
             tabPanel("Compare growth rates", value = "tab3",
                      sidebarLayout(
-                       sidebarPanel(width = 3,
+                       sidebarPanel(width = 4,
                                     radioButtons("Experiment3",
                                                  label = h4("Experiment"),
                                                  choices = list("C. wallercreekii tubes salinity" = 1, 
@@ -113,10 +87,8 @@ shinyUI(fluidPage(theme = shinytheme("flatly"),
                                     uiOutput("whichCheckBoxInput3")#,
                                    # actionButton("actionPlot3", "Plot")
                        ),
-                       mainPanel(width = 9,
+                       mainPanel(width = 8,
                                  plotOutput('Plot3', height = 800)#,
-                                 #plotOutput('Plot3.2', height = 400)#,
-                                 #tableOutput('TableAOV3')
                        ) # end mainPanel
                      ) # end third sidebarPanel
                   ) # end third tab
