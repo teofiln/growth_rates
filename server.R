@@ -72,12 +72,10 @@ shinyServer(function(input, output, session) {
                             max = max(DF$Transfer), 
                             value = c(min(DF$Transfer), 
                                       max(DF$Transfer)), ticks=TRUE),
-                sliderInput("aspect_ratio1", 
+                numericInput("aspect_ratio1", 
                             label = h5("Aspect ratio"), 
-                            min = 0, 
-                            max = 10, 
                             value = 10, 
-                            ticks=TRUE)
+                            step=1)
     )
     return(out)
   })
@@ -154,12 +152,10 @@ shinyServer(function(input, output, session) {
                 selectInput(inputId = "switchPlot", label = h5("Faceted or superimposed"),
                             choices = list("Faceted" = 1, "Superimposed" = 2),
                             selected = 1),
-                sliderInput("aspect_ratio2", 
+                numericInput("aspect_ratio2",
                             label = h5("Aspect ratio"), 
-                            min = 0, 
-                            max = 10, 
                             value = 6, 
-                            ticks=TRUE),
+                            step=1),
                 checkboxInput("removeDay0", 
                               label = h5("Remove Day 0?"),
                               value = FALSE)
@@ -313,12 +309,10 @@ shinyServer(function(input, output, session) {
                 selectInput(inputId = "switchPlot4", label = h5("Facet by:"),
                             choices = list("Strain" = 1, "Treatment" = 2),
                             selected = 1),
-                sliderInput("aspect_ratio4", 
+                numericInput("aspect_ratio4", 
                             label = h5("Aspect ratio"), 
-                            min = 0, 
-                            max = 10, 
                             value = 7, 
-                            ticks=TRUE)
+                            step=1)
     )
     return(out)
   })
