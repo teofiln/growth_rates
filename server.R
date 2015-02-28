@@ -37,9 +37,63 @@ meanNsd <- function(x) { c(Mean=mean(x$trDay, na.rm=TRUE), SD=sd(x$trDay, na.rm=
 
 shinyServer(function(input, output, session) {
 
-##############################################
-##     start growth curves tab              ##
-##############################################
+  ##############################################
+  ##     start browse data tab                ##
+  ##############################################
+  
+  # assign dataset to plot
+  # based on selected experiment
+  whichExperiment0 <- reactive({
+    DF <- switch(input$Experiment0,
+                 "1" = WSALT,
+                 "2" = WTEMP,
+                 "3" = CSALT,
+                 "4" = WFLAS,
+                 "5" = WFLAS2,
+                 "6" = CFLAS)
+    return(DF)
+  })
+
+  # create a spreadsheet for transfer
+  createTransfer <- reactive({
+    input$calculateTransferVolumes
+   # isolate(
+      DF <- whichExperiment0()
+      Today <- DF[DF$Day==max(DF$Day), ]
+      
+      VOL <- input$finalVolume
+      RFU <- input$desiredRFU
+      
+      out <- mutate(.data = Today,
+                    VolCul = round((RFU * VOL)/(Today$RF-Today$Rfctrl), 2),
+                    VolMed = round(VOL - VolCul, 2))
+   # )
+    return(out[,c(7,10,14:15,12:13,18:19)])
+  })
+  
+  # download the spreadsheet
+  output$downloadTransferSheet <- downloadHandler(
+    filename =  function() {
+      paste("Transfer_", Sys.Date(), '.csv', sep='')
+    },
+    content = function(file) { 
+      write.csv(createTransfer(), file)
+    },
+    contentType='text/csv'
+  )
+  
+  output$Table0 <- renderDataTable({
+    DF <- whichExperiment0()[,1:13]
+  })
+  
+  
+  ##############################################
+  ##     end browse data tab                  ##
+  ##############################################
+  
+  ##############################################
+  ##     start growth curves tab              ##
+  ##############################################
   
   # assign dataset to plot
   # based on selected experiment
@@ -58,7 +112,8 @@ shinyServer(function(input, output, session) {
   # for subseting an experiment
   output$whichSelectInput1 <- renderUI({
     DF <- whichExperiment1()
-    out <-  div(id = "PlotControls", class = "collapse in", 
+    out <-  div(id = "PlotControls", class = "collapse", 
+                wellPanel(
                 checkboxGroupInput(inputId = "chooseStrain1", label = h5("Strain"), inline = TRUE,
                             choices = levels(DF$Strain),
                             selected = levels(DF$Strain)[1:5]),
@@ -75,15 +130,16 @@ shinyServer(function(input, output, session) {
                                       max(DF$Transfer)), ticks=TRUE),
                 sliderInput("aspect_ratio1",
                             label = h5("Aspect ratio (semi-log plot only)"), 
-                            min = 0, 
+                            min = 1, 
                             max = 10, 
                             value = 5, 
                             ticks=TRUE,
-                            step=0.001),
+                            step=0.5),
                 checkboxInput("logScale", 
                               label=h5("Toggle log scale"),
-                              value=FALSE)
-    )
+                              value=TRUE) 
+                ) # end wellPanel
+    ) # end collapsable div
     return(out)
   })
   
@@ -92,7 +148,9 @@ shinyServer(function(input, output, session) {
   # in conditional panels
   whichSubset1 <- reactive({
     DF <- isolate( whichExperiment1() )
-    DF <- DF[which(DF$Strain %in% input$chooseStrain1 & DF$Treatment %in% input$chooseTreatment1 & DF$Rep %in% input$chooseReplicate1), ]
+    DF <- DF[which(DF$Strain %in% input$chooseStrain1 & 
+                     DF$Treatment %in% input$chooseTreatment1 & 
+                     DF$Rep %in% input$chooseReplicate1), ]
     DF <- DF[which(DF$Transfer >= input$Transfer1[1] & DF$Transfer <= input$Transfer1[2]), ]
     return(DF)
   }) 
@@ -129,44 +187,14 @@ shinyServer(function(input, output, session) {
     }
   })
 
-  # create a spreadsheet for transfer
-  createTransfer <- reactive({
-    DF <- whichExperiment1()
-    Today <- DF[DF$Day==max(DF$Day), ]
-    VOL <- input$finalVolume
-    RFU <- input$desiredRFU
+  ##############################################
+  ##          end growth curves tab           ##
+  ##############################################
     
-    Today <- mutate(.data = Today,
-                    VolCul = round((RFU*VOL)/(Today$RF-Today$Rfctrl), 2),
-                    VolMed = round(VOL - VolCul)) #(RFU*VOL)/(Today$RF-Today$Rfctrl), 2))
-    out <- Today[,c(7,10:13,4,14:15)]
-    return(out)
-  })
-  
-  output$Table1 <- renderDataTable({
-    createTransfer()
-  })
-
-  # download the spreadsheet
-  output$downloadTransferSheet <- downloadHandler(
-    filename =  function() {
-      paste("Transfer_", Sys.Date(), '.csv', sep='')
-      },
-    content = function(file) { 
-        write.csv(createTransfer(), file)
-      },
-    contentType='text/csv'
-  )
-
+  ##############################################
+  ##          start compare slopes tab        ##
+  ##############################################
     
-##############################################
-##          end growth curves tab           ##
-##############################################
-  
-##############################################
-##          start compare slopes tab        ##
-##############################################
-  
   # assign dataset to plot
   # based on selected experiment
   whichExperiment2 <- reactive({
@@ -181,7 +209,9 @@ shinyServer(function(input, output, session) {
   # for subseting an experiment
   output$whichSelectInput <- renderUI({
     DF <- whichExperiment2()
-    out <- list(selectInput(inputId = "chooseStrain", label = h5("Strain"),
+    out <- div(id = "PlotControls2", class = "collapse", 
+               wellPanel(
+                selectInput(inputId = "chooseStrain", label = h5("Strain"),
                             choices = levels(DF$Strain),
                             selected = levels(DF$Strain)[1]),
                 selectInput(inputId = "chooseTreatment", label = h5("Treatment"),
@@ -190,19 +220,23 @@ shinyServer(function(input, output, session) {
                 sliderInput(inputId = "Transfer2", label = h5("Transfer Range"), 
                             min = min(DF$Transfer), 
                             max = max(DF$Transfer), 
-                            value = c(min(DF$Transfer), 
+                            value = c(max(DF$Transfer)-5, 
                                       max(DF$Transfer)), ticks=TRUE),
                 selectInput(inputId = "switchPlot", label = h5("Faceted or superimposed"),
                             choices = list("Faceted" = 1, "Superimposed" = 2),
                             selected = 1),
-                numericInput("aspect_ratio2",
-                            label = h5("Aspect ratio"), 
-                            value = 6, 
-                            step=1),
+                sliderInput("aspect_ratio2",
+                            label = h5("Aspect ratio"),
+                            min=1,
+                            max=10,
+                            value = 6,
+                            #step=0.5,
+                            ticks=TRUE),
                 checkboxInput("removeDay0", 
                               label = h5("Remove Day 0?"),
                               value = FALSE)
-    )
+               ) # end wellPanel
+    ) # end collapsable div
   return(out)
   })
   
@@ -312,14 +346,14 @@ shinyServer(function(input, output, session) {
     tb1()#[c(1,4,5,7,8),]
   })
 
-##############################################
-##          end compare slopes tab          ##
-##############################################
-  
-##############################################
-##          start slopes through time tab   ##
-##############################################
-  
+  ##############################################
+  ##          end compare slopes tab          ##
+  ##############################################
+    
+  ##############################################
+  ##          start slopes through time tab   ##
+  ##############################################
+    
   # same as third tab
   # except different plots
   
@@ -336,7 +370,9 @@ shinyServer(function(input, output, session) {
   # for subseting the experiment
   output$whichCheckBoxInput4 <- renderUI({
     DF <- whichExperiment4()
-    out <- list(checkboxGroupInput(inputId = "chooseStrain4", label = h5("Strain"), inline = TRUE,
+    out <- div(id = "PlotControls4", class = "collapse", 
+               wellPanel(
+                checkboxGroupInput(inputId = "chooseStrain4", label = h5("Strain"), inline = TRUE,
                                    choices = levels(DF$Strain),
                                    selected = levels(DF$Strain)[1:5]),
                 checkboxGroupInput(inputId = "chooseTreatment4", label = h5("Treatment"), inline = TRUE,
@@ -351,11 +387,15 @@ shinyServer(function(input, output, session) {
                 selectInput(inputId = "switchPlot4", label = h5("Facet by:"),
                             choices = list("Strain" = 1, "Treatment" = 2),
                             selected = 1),
-                numericInput("aspect_ratio4", 
-                            label = h5("Aspect ratio"), 
+                sliderInput("aspect_ratio4", 
+                            label = h5("Aspect ratio"),
+                            min=1,
+                            max=10,
                             value = 7, 
-                            step=1)
-    )
+                            step=1,
+                            ticks=TRUE)
+               ) # end wellPanel
+    ) # end collapsable div
     return(out)
   })
   
@@ -440,182 +480,190 @@ shinyServer(function(input, output, session) {
     pl4() + coord_fixed(ratio=input$aspect_ratio4)
   })
 
-##############################################
-##          end slopes through time tab     ##
-##############################################
-
-##############################################
-##     start compare growth rates tab       ##
-##############################################
-
-# the logic is the same as the second tab
-# with group checkbox instead of select inputs
-# and a different output
-
-# choose experiment
-whichExperiment3 <- reactive({
-  DF <- switch(input$Experiment3,
-               "1" = WSALTslopes, 
-               "2" = WTEMPslopes, 
-               "3" = CSALTslopes )
-  return(DF)
-})
-
-# create conditional panel
-# for subseting an experiment
-output$whichCheckBoxInput3 <- renderUI({
-  DF <- whichExperiment3()
-  out <- list(checkboxGroupInput(inputId = "chooseStrain3", label = h5("Strain"), inline = TRUE,
-                                 choices = levels(DF$Strain),
-                                 selected = levels(DF$Strain)[1:5]),
-              checkboxGroupInput(inputId = "chooseTreatment3", label = h5("Treatment"), inline = TRUE,
-                                 choices = levels(DF$Treatment),
-                                 selected = levels(DF$Treatment)[1:5]),
-              radioButtons(inputId = "chooseMeasure3", label = h5("Measure"),
-                           choices = list("Growth rate" = 1,
-                                          "Divisions per day" = 2,
-                                          "Doubling time" = 3 ),
-                           selected = 1),
-              sliderInput(inputId = "Transfer3", label = h5("Transfer Range"), 
-                          min = min(as.numeric(DF$seqRep)), 
-                          max = max(as.numeric(DF$seqRep)), 
-                          value = c(min(as.numeric(DF$seqRep)), 
-                                    max(as.numeric(DF$seqRep)) ) ),
-              selectInput(inputId = "switchPlot3", label = h5("Facet by:"),
-                          choices = list("Strain" = 1, "Treatment" = 2),
-                          selected = 1)
-  )
-  return(out)
-})
-
-# choose the subject (combination of strain and treatment)
-whichSubset3 <- reactive({
-  DF <- isolate( whichExperiment3() )
-  DF <- DF[which(DF$Strain %in% input$chooseStrain3 & DF$Treatment %in% input$chooseTreatment3), ]
-  DF <- DF[which(as.numeric(DF$seqRep) >= input$Transfer3[1] & as.numeric(DF$seqRep) <= input$Transfer3[2]), ]
-  return(DF)
-}) 
-
-# reactive function to get the mean/SD
-# and convert r to K and T2
-getMean <- reactive({
-  DF3 <- whichSubset3()
-  meanSlopes <- ddply(.data=DF3,
-                      .variables=.(Strain, Treatment),
-                      .fun=meanNsd)
-  meanSlopes$Mean[which(meanSlopes$Mean < 0)] <- NA
+  ##############################################
+  ##          end slopes through time tab     ##
+  ##############################################
   
-  out <- mutate(meanSlopes,
-                K = Mean/log(2),
-                sdK = SD/log(2),
-                T2 = log(2)/Mean,
-                sdT2 =  SD + T2)
-  return(out)
-})
+  ##############################################
+  ##     start compare growth rates tab       ##
+  ##############################################
 
-# subset the above data frame
-# to get only r, K or T2
-getData <- reactive({
-  DAT <- getMean()
-  out3 <- switch(input$chooseMeasure3,
-                 "1" = DAT[,1:4],
-                 "2" = DAT[,c(1:2,5:6)],
-                 "3" = DAT[,c(1:2,7:8)] )
-  colnames(out3) <- c("Strain", "Treatment", "MEAN", "SD")
-  return(out3)
-})
-
-# plot
-# facet by Strain
-pl3.a1 <- reactive({
-  DF3 <- getData()
-  ENV3 <- environment()
-  plotMeanSlopes <- ggplot(data = DF3, environment=ENV3, aes(x=Treatment, y=MEAN, fill=Treatment)) + 
-    geom_bar(stat="identity", data=DF3, width=.8, colour="black") +
-    geom_errorbar(aes(ymin=MEAN-SD, ymax=MEAN+SD), width=.2, data = DF3) +
-    scale_fill_brewer(palette="Blues") + #, name="Salinity") +
-    facet_grid(. ~ Strain) +
-    theme_bw() +
-    ggtitle("Mean growth rate (+- SD) across Transfers and Replicates at different salinities.") +
-    ylab("Mean growth rate (slope)") 
-  return(plotMeanSlopes)
+  # the logic is the same as the second tab
+  # with group checkbox instead of select inputs
+  # and a different output
   
-})
-
-# plot the coefficient of variation
-# not meaningful for T2
-# facet by Strain
-pl3.a2 <- reactive({
-  DF3 <- getData()
-  ENV3 <- environment()
-  plotCV <- ggplot(data = DF3, environment=ENV3, aes(x=Treatment, y=abs(SD/MEAN), fill=Treatment)) + 
-    geom_bar(stat="identity", data=DF3, width=.8, colour="black") +
-    scale_fill_brewer(palette="Blues") + #, name="Salinity") +
-    facet_grid(. ~ Strain) +
-    theme_bw() +
-    ggtitle("Coefficient of variation (|SD/Mean|) as a measure of 
-            the variability around the mean growth rate across Transfers and Replicates.") +
-    ylab("|Coefficient of variation|") #+
-  #ylim(0,max(abs(DF3$SD/DF3$Mean))+0.02) 
-  return(plotCV)
-}) 
-
-# plot
-# facet by Treatment
-pl3.b1 <- reactive({
-  DF3 <- getData()
-  ENV3 <- environment()
-  plotMeanSlopes <- ggplot(data = DF3, environment=ENV3, aes(x=Strain, y=MEAN, fill=Treatment)) + 
-    geom_bar(stat="identity", data=DF3, width=.8, colour="black") +
-    geom_errorbar(aes(ymin=MEAN-SD, ymax=MEAN+SD), width=.2, data = DF3) +
-    scale_fill_brewer(palette="Blues") + #, name="Salinity") +
-    facet_grid(. ~ Treatment) +
-    theme_bw() +
-    ggtitle("Mean growth rate (+- SD) across Transfers and Replicates at different salinities.") +
-    ylab("Mean growth rate (slope)") #+
-  # ylim(0,1) 
-  return(plotMeanSlopes)
+  # choose experiment
+  whichExperiment3 <- reactive({
+    DF <- switch(input$Experiment3,
+                 "1" = WSALTslopes, 
+                 "2" = WTEMPslopes, 
+                 "3" = CSALTslopes )
+    return(DF)
+  })
   
-})
-
-# plot the coefficient of variation
-# meaningless for T2
-# facet by Treatment
-pl3.b2 <- reactive({
-  DF3 <- getData()
-  ENV3 <- environment()
-  plotCV <- ggplot(data = DF3, environment=ENV3, aes(x=Strain, y=abs(SD/MEAN), fill=Treatment)) + 
-    geom_bar(stat="identity", data=DF3, width=.8, colour="black") +
-    scale_fill_brewer(palette="Blues") + #, name="Salinity") +
-    facet_grid(. ~ Treatment) +
-    theme_bw() +
-    ggtitle("Coefficient of variation (|SD/Mean|) as a measure of 
-            the variability around the mean growth rate across Transfers and Replicates.") +
-    ylab("|Coefficient of variation|") #+
-  #ylim(0,max(abs(DF3$SD/DF3$Mean))+0.02) 
-  return(plotCV)
+  # create conditional panel
+  # for subseting an experiment
+  output$whichCheckBoxInput3 <- renderUI({
+    DF <- whichExperiment3()
+    out <- div(id = "PlotControls3", class = "collapse", 
+               wellPanel(
+                checkboxGroupInput(inputId = "chooseStrain3", label = h5("Strain"), inline = TRUE,
+                                   choices = levels(DF$Strain),
+                                   selected = levels(DF$Strain)[1:5]),
+                checkboxGroupInput(inputId = "chooseTreatment3", label = h5("Treatment"), inline = TRUE,
+                                   choices = levels(DF$Treatment),
+                                   selected = levels(DF$Treatment)[1:5]),
+                radioButtons(inputId = "chooseMeasure3", label = h5("Measure"),
+                             choices = list("Growth rate" = 1,
+                                            "Divisions per day" = 2,
+                                            "Doubling time" = 3 ),
+                             selected = 1),
+                sliderInput(inputId = "Transfer3", label = h5("Transfer Range"), 
+                            min = min(as.numeric(DF$seqRep)), 
+                            max = max(as.numeric(DF$seqRep)), 
+                            value = c(min(as.numeric(DF$seqRep)), 
+                                      max(as.numeric(DF$seqRep)) ) ),
+                selectInput(inputId = "switchPlot3", label = h5("Facet by:"),
+                            choices = list("Strain" = 1, "Treatment" = 2),
+                            selected = 1)
+               ) # end wellPanel
+    ) # end collapsable div
+    return(out)
+  })
   
-}) 
+  # choose the subject (combination of strain and treatment)
+  whichSubset3 <- reactive({
+    DF <- isolate( whichExperiment3() )
+    DF <- DF[which(DF$Strain %in% input$chooseStrain3 & DF$Treatment %in% input$chooseTreatment3), ]
+    DF <- DF[which(as.numeric(DF$seqRep) >= input$Transfer3[1] & as.numeric(DF$seqRep) <= input$Transfer3[2]), ]
+    return(DF)
+  }) 
+  
+  # reactive function to get the mean/SD
+  # and convert r to K and T2
+  getMean <- reactive({
+    DF3 <- whichSubset3()
+    meanSlopes <- ddply(.data=DF3,
+                        .variables=.(Strain, Treatment),
+                        .fun=meanNsd)
+    meanSlopes$Mean[which(meanSlopes$Mean < 0)] <- NA
+    
+    out <- mutate(meanSlopes,
+                  K = Mean/log(2),
+                  sdK = SD/log(2),
+                  T2 = log(2)/Mean,
+                  sdT2 =  SD + T2)
+    return(out)
+  })
+  
+  # subset the above data frame
+  # to get only r, K or T2
+  getData <- reactive({
+    DAT <- getMean()
+    out3 <- switch(input$chooseMeasure3,
+                   "1" = DAT[,1:4],
+                   "2" = DAT[,c(1:2,5:6)],
+                   "3" = DAT[,c(1:2,7:8)] )
+    colnames(out3) <- c("Strain", "Treatment", "MEAN", "SD")
+    return(out3)
+  })
+  
+  # plot
+  # facet by Strain
+  pl3.a1 <- reactive({
+    DF3 <- getData()
+    ENV3 <- environment()
+    plotMeanSlopes <- ggplot(data = DF3, environment=ENV3, aes(x=Treatment, y=MEAN, fill=Treatment)) + 
+      geom_bar(stat="identity", data=DF3, width=.8, colour="black") +
+      geom_errorbar(aes(ymin=MEAN-SD, ymax=MEAN+SD), width=.2, data = DF3) +
+      scale_fill_brewer(palette="Blues") + #, name="Salinity") +
+      facet_grid(. ~ Strain) +
+      theme_bw() +
+      ggtitle("Mean growth rate (+- SD) across Transfers and Replicates at different salinities.") +
+      ylab("Mean growth rate (slope)") 
+    return(plotMeanSlopes)
+    
+  })
+  
+  # plot the coefficient of variation
+  # not meaningful for T2
+  # facet by Strain
+  pl3.a2 <- reactive({
+    DF3 <- getData()
+    ENV3 <- environment()
+    plotCV <- ggplot(data = DF3, environment=ENV3, aes(x=Treatment, y=abs(SD/MEAN), fill=Treatment)) + 
+      geom_bar(stat="identity", data=DF3, width=.8, colour="black") +
+      scale_fill_brewer(palette="Blues") + #, name="Salinity") +
+      facet_grid(. ~ Strain) +
+      theme_bw() +
+      ggtitle("Coefficient of variation (|SD/Mean|) as a measure of 
+              the variability around the mean growth rate across Transfers and Replicates.") +
+      ylab("|Coefficient of variation|") #+
+    #ylim(0,max(abs(DF3$SD/DF3$Mean))+0.02) 
+    return(plotCV)
+  }) 
+  
+  # plot
+  # facet by Treatment
+  pl3.b1 <- reactive({
+    DF3 <- getData()
+    ENV3 <- environment()
+    plotMeanSlopes <- ggplot(data = DF3, environment=ENV3, aes(x=Strain, y=MEAN, fill=Treatment)) + 
+      geom_bar(stat="identity", data=DF3, width=.8, colour="black") +
+      geom_errorbar(aes(ymin=MEAN-SD, ymax=MEAN+SD), width=.2, data = DF3) +
+      scale_fill_brewer(palette="Blues") + #, name="Salinity") +
+      facet_grid(. ~ Treatment) +
+      theme_bw() +
+      ggtitle("Mean growth rate (+- SD) across Transfers and Replicates at different salinities.") +
+      ylab("Mean growth rate (slope)") #+
+    # ylim(0,1) 
+    return(plotMeanSlopes)
+    
+  })
+  
+  # plot the coefficient of variation
+  # meaningless for T2
+  # facet by Treatment
+  pl3.b2 <- reactive({
+    DF3 <- getData()
+    ENV3 <- environment()
+    plotCV <- ggplot(data = DF3, environment=ENV3, aes(x=Strain, y=abs(SD/MEAN), fill=Treatment)) + 
+      geom_bar(stat="identity", data=DF3, width=.8, colour="black") +
+      scale_fill_brewer(palette="Blues") + #, name="Salinity") +
+      facet_grid(. ~ Treatment) +
+      theme_bw() +
+      ggtitle("Coefficient of variation (|SD/Mean|) as a measure of 
+              the variability around the mean growth rate across Transfers and Replicates.") +
+      ylab("|Coefficient of variation|") #+
+    #ylim(0,max(abs(DF3$SD/DF3$Mean))+0.02) 
+    return(plotCV)
+    
+  }) 
+  
+  # decide how to facet
+  # this needs fixing
+  pl3 <- reactive({
+    if (input$switchPlot3 == 1) {
+      plot <- grid.arrange(pl3.a1(), pl3.a2(), nrow=2)
+    } else {
+      plot <- grid.arrange(pl3.b1(), pl3.b2(), nrow=2)
+    }
+    return(plot)
+  })
+  
+  # render the barchart
+  output$Plot3 <- renderPlot({
+    pl3()
+  })
+  
+  ##############################################
+  ##     end compare growth rates tab         ##
+  ##############################################
+  
+  ##############################################
+  ##     end compare growth rates tab         ##
+  ##############################################
 
-# decide how to facet
-# this needs fixing
-pl3 <- reactive({
-  if (input$switchPlot3 == 1) {
-    plot <- grid.arrange(pl3.a1(), pl3.a2(), nrow=2)
-  } else {
-    plot <- grid.arrange(pl3.b1(), pl3.b2(), nrow=2)
-  }
-  return(plot)
-})
-
-# render the barchart
-output$Plot3 <- renderPlot({
-  pl3()
-})
-
-##############################################
-##     end compare growth rates tab         ##
-##############################################
 
   output$textAbout <- renderUI({
     HTML("<p>Tool to view and calculate growth rates.</p>")
