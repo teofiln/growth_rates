@@ -82,10 +82,33 @@ shinyServer(function(input, output, session) {
     contentType='text/csv'
   )
   
-  output$Table0 <- renderDataTable({
-    DF <- whichExperiment0()[,1:13]
-  })
+  # render all the data
+  output$Table0a <- renderDataTable({
+    whichExperiment0()[,1:13]
+  }, options = list(pageLength = 10) )
   
+  # prepare and render the new data table
+  output$Table0b <- renderDataTable({
+    inFile <- input$file1
+    
+    if (is.null(inFile))
+      return(NULL)
+    
+    out <- read.csv(inFile$datapath, header = input$header, skip=input$skip_lines,
+                    sep = input$sep, quote = input$quote)
+    colnames(out) <- c("Sample", "Fluorescence", "Unit")
+    blanks <- tail(out$Fluorescence, input$numTreat)
+    out <- out[1:(nrow(out) - input$numTreat), ]
+    out$Blank <- rep(blanks, length.out=nrow(out), each=input$numStrain)
+    
+    out <- out[,c(1,2,4,3)]
+    return(out)
+    
+  }, options = list(pageLength = 10) )
+  
+  output$Table0c <- renderDataTable({
+    createTransfer()
+  }, options = list(pageLength = 10) )
   
   ##############################################
   ##     end browse data tab                  ##
@@ -222,7 +245,7 @@ shinyServer(function(input, output, session) {
                             max = max(DF$Transfer), 
                             value = c(max(DF$Transfer)-5, 
                                       max(DF$Transfer)), ticks=TRUE),
-                selectInput(inputId = "switchPlot", label = h5("Faceted or superimposed"),
+                selectInput(inputId = "switchPlot", label = h5("Toggle plot"),
                             choices = list("Faceted" = 1, "Superimposed" = 2),
                             selected = 1),
                 sliderInput("aspect_ratio2",
