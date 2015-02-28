@@ -58,7 +58,8 @@ shinyServer(function(input, output, session) {
   # for subseting an experiment
   output$whichSelectInput1 <- renderUI({
     DF <- whichExperiment1()
-    out <- list(checkboxGroupInput(inputId = "chooseStrain1", label = h5("Strain"), inline = TRUE,
+    out <-  div(id = "PlotControls", class = "collapse in", 
+                checkboxGroupInput(inputId = "chooseStrain1", label = h5("Strain"), inline = TRUE,
                             choices = levels(DF$Strain),
                             selected = levels(DF$Strain)[1:5]),
                 checkboxGroupInput(inputId = "chooseTreatment1", label = h5("Treatment"), inline = TRUE,
@@ -108,26 +109,55 @@ shinyServer(function(input, output, session) {
       geom_line(size=0.6) +
       geom_point(size=3) +
       geom_hline(aes(yintercept=10000), size=0.3, linetype=3, colour="firebrick4") +
-      xlab("Day") +  #ylab("RFU (log10 scale)") +
+      xlab("Day") +
       facet_grid(Strain ~ Treatment) +
-      theme_bw() #+
-#       scale_y_continuous(trans=log10_trans(), 
-#                          breaks = trans_breaks("log10", function(x) 10^x, n=3),
-#                          labels = trans_format("log10", math_format(10^.x))) 
+      theme_bw()
     return(plGrowCurv)
   })
   
-  # render along with control for aspect ratio
+  # render with control for aspect ratio
+  # and logic for log scale
   output$Plot1 <- renderPlot({
-    if (input$logScale==TRUE)  {
-    pl1() + coord_fixed(ratio=input$aspect_ratio1) + ylab("RFU (log10 scale)") +
-             scale_y_continuous(trans=log10_trans(), 
-                                breaks = trans_breaks("log10", function(x) 10^x, n=3),
-                                labels = trans_format("log10", math_format(10^.x))) 
+    if (input$logScale==TRUE) {
+    pl1() + coord_fixed(ratio=input$aspect_ratio1) + 
+      ylab("RFU (log10 scale)") +
+      scale_y_continuous(trans=log10_trans(),
+                         breaks = trans_breaks("log10", function(x) 10^x, n=3),
+                         labels = trans_format("log10", math_format(10^.x))) 
     } else {
-      pl1() + coord_fixed(ratio=0.001)  + ylab("RFU")
+      pl1() + coord_fixed(ratio=0.001) + ylab("RFU")
     }
   })
+
+  # create a spreadsheet for transfer
+  createTransfer <- reactive({
+    DF <- whichExperiment1()
+    Today <- DF[DF$Day==max(DF$Day), ]
+    VOL <- input$finalVolume
+    RFU <- input$desiredRFU
+    
+    Today <- mutate(.data = Today,
+                    VolCul = round((RFU*VOL)/(Today$RF-Today$Rfctrl), 2),
+                    VolMed = round(VOL - VolCul)) #(RFU*VOL)/(Today$RF-Today$Rfctrl), 2))
+    out <- Today[,c(7,10:13,4,14:15)]
+    return(out)
+  })
+  
+  output$Table1 <- renderDataTable({
+    createTransfer()
+  })
+
+  # download the spreadsheet
+  output$downloadTransferSheet <- downloadHandler(
+    filename =  function() {
+      paste("Transfer_", Sys.Date(), '.csv', sep='')
+      },
+    content = function(file) { 
+        write.csv(createTransfer(), file)
+      },
+    contentType='text/csv'
+  )
+
     
 ##############################################
 ##          end growth curves tab           ##
