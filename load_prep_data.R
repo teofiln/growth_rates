@@ -16,6 +16,7 @@ Cflas <- read.csv("./CFLAS.csv", header=TRUE)
 
 # function to reformat the datasets
 MUTATE <- function(x) { mutate(.data=x,
+                               # Date = as.Date(as.character(Date)),
                                 Rep=factor(Replicate),
                                 seqRep=factor(Transfer),
                                 Transfer=as.numeric(Transfer), 
@@ -23,7 +24,7 @@ MUTATE <- function(x) { mutate(.data=x,
                                 Temperature=factor(Temperature),
                                 Media=factor(Media),
                                 Experiment=factor(Experiment),
-                                Strain=factor(as.character(Strain)),
+                                Strain=factor(Strain),
                                 lnRF=log(RF-Rfctrl),
                                 trDay=as.integer((Hour/24)+1))
                         }
@@ -48,9 +49,6 @@ Wflas <- MUTATE(Wflas)
 Wflas2 <- MUTATE(Wflas2)
 Cflas <- MUTATE(Cflas)
 # this combined dataset not used in app anymore
-# DAT <- rbind(Wfami, Wsalt, Wtemp, Wflas, Wflas2, Csalt)
-# DAT <- MUTATE(DAT)
-DAT <- NULL
 # DAT <- rbind(Wfami, Wsalt, Wtemp, Wflas, Wflas2, Csalt)
 # DAT <- MUTATE(DAT)
 DAT <- NULL
