@@ -9,17 +9,56 @@ library(car)
 library(shinythemes)
 library(RColorBrewer)
 
-# update the datasets 
-# creates symbolic links from original files in different folder
-# will work only localy
-#system("./update_datasets.sh")
-#system("./copy_datasets.sh")
+##############################################
+##     define functions                     ##
+##############################################
 
-# helper to get mean, SD
+# function for transforming the metadata 
+# for data uploads
+makeMetaData <- function(dat.fram) {
+  out <- mutate(.data=dat.fram,
+                Date=Date + 1,
+                Day=Day + 1,
+                Hour=Hour + 24)
+  return(out)
+}
+
+# function for transforming the metadata 
+# for data uploads
+makeMetaTransfer <- function(dat.fram) {
+  out <- mutate(.data=dat.fram,
+                Hour=rep(0,nrow(dat.fram)),
+                Transfer=Transfer + 1)
+  return(out)
+}
+
+# function to reformat the dataset
+# after data uload
+MUTATE <- function(x) {
+  out <- mutate(.data=x,
+                Date=as.Date(as.character(Date)),
+                Rep=factor(Replicate),
+                Transfer=as.numeric(Transfer), 
+                seqRep=LETTERS[Transfer],
+                Treatment=factor(Treatment),
+                Temperature=factor(Temperature),
+                Media=factor(Media),
+                Experiment=factor(Experiment),
+                Strain=factor(Strain),
+                lnRF=log(RF-Rfctrl),
+                trDay=as.integer((Hour/24)+1))
+  return(out)
+}
+
+# get mean, SD
+# for some of the plots
 meanNsd <- function(x) { c(Mean=mean(x$trDay, na.rm=TRUE), SD=sd(x$trDay, na.rm=TRUE)) }
 
 shinyServer(function(input, output, session) {
 
+  ##############################################
+  ##     load the data                        ##
+  ##############################################
   source("./load_prep_data.R")
   ALLDATA <- load_prep_data()
   
@@ -38,7 +77,7 @@ shinyServer(function(input, output, session) {
   CFLAS <- ALLDATA[[14]]
   
   ##############################################
-  ##     start browse data tab                ##
+  ##     browse/upload/transfer data tab      ##
   ##############################################
   
   # assign dataset to plot
@@ -54,15 +93,30 @@ shinyServer(function(input, output, session) {
     return(DF)
   })
   
-  # render all the data
+  # filename for output of updated data frames
+  # based on selected experiment
+  whichFilename0 <- reactive({
+    DF <- switch(input$Experiment0,
+                 "1" = "WSALT.csv",
+                 "2" = "WTEMP.csv",
+                 "3" = "CSALT.csv",
+                 "4" = "WFLAS.csv",
+                 "5" = "WFLAS2.csv",
+                 "6" = "CFLAS.csv")
+    return(DF)
+  })
+  
+  ###
+  # render a data table for all data form selected experiment
   output$Table0a <- renderDataTable({
     whichExperiment0()[,1:13]
   }, options = list(pageLength = 10) )
   
-  ###
-  # routines for processing new data
+  ###############################
+  ##    processing new data    ##
+  ###############################
   
-  # read and prepare the new data sheet
+  # read new data
   readNewData <- reactive({
     inFile <- input$file1
     
@@ -75,33 +129,7 @@ shinyServer(function(input, output, session) {
   read.csv(inFile$datapath, header = FALSE, skip = 0, sep = "\t", quote = "")
   })
   
-  # helper for transforming the metadata for a new day
-  makeMetaData <- function(dat.fram) {
-    out <- mutate(.data=dat.fram,
-                  Date=Date + 1,
-                  Day=Day + 1,
-                  Hour=Hour + 24)
-    return(out)
-  }
-  
-  # function to reformat the dataset
-  MUTATE <- function(x) {
-    out <- mutate(.data=x,
-             Date=as.Date(as.character(Date)),
-             Rep=factor(Replicate),
-             Transfer=as.numeric(Transfer), 
-             seqRep=LETTERS[Transfer],
-             Treatment=factor(Treatment),
-             Temperature=factor(Temperature),
-             Media=factor(Media),
-             Experiment=factor(Experiment),
-             Strain=factor(Strain),
-             lnRF=log(RF-Rfctrl),
-             trDay=as.integer((Hour/24)+1))
-    return(out)
-    }
-  
-  # prep the new data
+  # prep new data
   prepNewData <- reactive({
     if (is.null(readNewData()))
       return(NULL)
@@ -134,18 +162,23 @@ shinyServer(function(input, output, session) {
     isolate({
       APPEND <- rbind(whichExperiment0(), prepNewData())
       write.csv(APPEND, file="./TEST.csv")
-      print("New data submitted")
+      output$transferSubmitted <- renderText({HTML("New data submitted")})
     })
   })
   
-  ###
-  # routines for creating, displaying and downloading transfer sheets
-  # need code for appending the transfer data to experiment data frame
+  ###############################
+  ##  end processing new data  ##
+  ###############################
+  
+  ##################################
+  ##    processing new transfer   ##
+  ##################################
   
   # create a spreadsheet for transfer
   createTransfer <- reactive({
-    input$calculateTransferVolumes
-    # isolate(
+    if (input$calculateTransfer == 0)
+      return(NULL)
+    
     DF <- whichExperiment0()
     Today <- DF[DF$Day==max(DF$Day) & DF$Transfer==max(DF$Transfer), ]
     
@@ -155,7 +188,6 @@ shinyServer(function(input, output, session) {
     out <- mutate(.data = Today,
                   VolCul = round((RFU * VOL)/(Today$RF-Today$Rfctrl), 2),
                   VolMed = round(VOL - VolCul, 2))
-    # )
     return(out[,c(7,10,14:15,12:13,18:19)])
   })
   
@@ -169,18 +201,50 @@ shinyServer(function(input, output, session) {
     },
     contentType='text/csv'
   )
-
+  
+  # render the transfer table
   output$Table0c <- renderDataTable({
     createTransfer()
   }, options = list(pageLength = 10) )
+  
+  # prep transfer data
+  prepTransfer <- reactive({
+    if (input$calculateTransfer == 0)
+      return(NULL)
+    
+    DF <- whichExperiment0()
+    META <- DF[DF$Day==max(DF$Day) & DF$Transfer==max(DF$Transfer), ]
+    newDay <- makeMetaTransfer(META)
+  
+    newDay$RF <- input$desiredRFU
+    newDay$Rfctrl <- rep(0, nrow(newDay))
+    newDay <- MUTATE(newDay)
+    return(newDay)
+  })
+
+  # commit the transfer data to experiment
+  observe({
+    if (input$submitTransfer == 0)
+      return(NULL)
+    
+    isolate({
+      APPEND <- rbind(whichExperiment0(), prepTransfer())
+      write.csv(APPEND[,1:13], file=whichFilename0(), row.names=FALSE)
+      output$transferSubmitted <- renderText({HTML("Transfer data submitted! Refresh the browser to view.")})
+    })
+  })
+
+  ####################################
+  ##  end processing new transfer   ##
+  ####################################
 
   ##############################################
-  ##     end browse data tab                  ##
+  ##  end browse/upload/transfer data tab     ##
   ##############################################
   
-  ##############################################
-  ##     start growth curves tab              ##
-  ##############################################
+  ########################################
+  ##     start growth curves tab        ##
+  ########################################
   
   # assign dataset to plot
   # based on selected experiment
@@ -276,6 +340,7 @@ shinyServer(function(input, output, session) {
                            labels = trans_format("log10", math_format(10^.x)))
     }
   })
+
   ##############################################
   ##          end growth curves tab           ##
   ##############################################
@@ -341,7 +406,6 @@ shinyServer(function(input, output, session) {
     if (input$removeDay0 == TRUE) {
       DF <- DF[- which(DF$Hour == 0), ]
     } 
-    
     return(DF)
   })
   

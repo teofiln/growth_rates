@@ -1,18 +1,6 @@
 library(shiny)
 library(shinythemes)
 
-# get a named list of the active experiments 
-# not used
-#EXPS <- as.list(dir(pattern="*.csv"))
-#names(EXPS) <- EXPS  # to be used in selectInput("Experiment"...) bellow
-
-# update the datasets 
-# creates symbolic links from original files in different folder
-# will work only localy
-# not used
-#system("./update_datasets.sh")
-#system("./copy_datasets.sh")
-
 shinyUI(fluidPage(theme = shinytheme("flatly"),
   
   titlePanel(h4("Cyclotella salinity experiments")),
@@ -49,14 +37,16 @@ shinyUI(fluidPage(theme = shinytheme("flatly"),
             tags$hr(),
             fileInput('file1', 'Choose file to upload',
                       accept = c(
-                        'text/csv',
-                        'text/comma-separated-values',
+                        #'text/csv',
+                        #'text/comma-separated-values',
                         'text/tab-separated-values',
-                        'text/plain',
-                        '.csv',
+                        #'text/plain',
+                        #'.csv',
                         '.tsv') ),
              tags$hr(),
-             actionButton("submitNewData", "Submit new data")
+             actionButton("submitNewData", "Submit new data"),
+             tags$hr(),
+             h4(textOutput("uploadSubmitted!"))
             ) # end collapsable div
           ), # end wellPanel
         wellPanel(
@@ -65,19 +55,20 @@ shinyUI(fluidPage(theme = shinytheme("flatly"),
           div(id = "Transfer", class = "collapse",
           numericInput("finalVolume", min=1, max=1000,
             label="Final volume (mL) in new transfer vessel", value=4),
-          numericInput("desiredRFU",
-            label="Desired fluorescence (RFU/mL) at start of next transfer", value=500),
-          downloadButton("downloadTransferSheet", label="Download")
+          numericInput("desiredRFU",                       
+            label="Fluorescence (RFU/mL) at start of next transfer", value=500),
+          actionButton("calculateTransfer", label="Calculate"),
+          downloadButton("downloadTransferSheet", label="Download"),
+          hr(),
+          strong("Caution: Clicking 'Submit Transfer' will add a day's worth of measurements to the dataset. 
+                  Use only when Transfer is actually performed!"),
+          hr(),
+          actionButton("submitTransfer", label="Submit Transfer"),
+          tags$hr(),
+          h4(textOutput("transferSubmitted!"))
           ) # end collapsible div
         ) # end wellPanel
       ), # end sidebarPanel
-        
-          
-#                                                 hr(),
-#                                                 strong("Caution: Clicking 'Submit Transfer' will add a day's worth of measurements to the dataset. 
-#                                                            Use only when Transfer is actually performed!"),
-#                                                 hr(),
-#                                                 actionButton("submitTransfer", label="Submit Transfer")
 
           mainPanel(width = 9,
             HTML("<button type='button' class='btn btn-info' data-toggle='collapse' data-target='#allData'>All data</button>"),
