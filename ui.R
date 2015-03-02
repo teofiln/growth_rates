@@ -11,11 +11,8 @@ shinyUI(fluidPage(theme = shinytheme("flatly"),
           radioButtons("Experiment0",
             label = h5("Experiment"),
               choices = list("C. wallercreekii tubes salinity" = 1, 
-                "C. wallercreekii tubes temperature" = 2, 
-                "C. cryptica tubes salinity" = 3, 
-                "C. wallercreekii flasks salinity" = 4, 
-                "C. wallercreekii flasks 2 salinity" = 5,
-                "C. cryptica flasks salinity" = 6),
+                "C. cryptica tubes salinity" = 2, 
+                "C. cryptica flasks salinity" = 3),
                 selected = 1),
         wellPanel(
           HTML("<button type='button' class='btn btn-info' data-toggle='collapse' data-target='#newData'>Upload new data</button>"),
@@ -79,7 +76,10 @@ shinyUI(fluidPage(theme = shinytheme("flatly"),
               dataTableOutput("Table0b")),
             HTML("<button type='button' class='btn btn-info' data-toggle='collapse' data-target='#transferData'>Transfer sheet</button>"),
             div(id = "transferData", class = "collapse",
-              dataTableOutput("Table0c"))
+              dataTableOutput("Table0c")),
+            HTML("<button type='button' class='btn btn-info' data-toggle='collapse' data-target='#RNA'>RNA</button>"),
+            div(id = "RNA", class = "collapse",
+                dataTableOutput("Table0d"))
             ) # end main panel
         ) # end sidebarLayout
     ), # end tab0

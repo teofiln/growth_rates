@@ -84,11 +84,8 @@ shinyServer(function(input, output, session) {
   whichExperiment0 <- reactive({
     DF <- switch(input$Experiment0,
                  "1" = WSALT,
-                 "2" = WTEMP,
-                 "3" = CSALT,
-                 "4" = WFLAS,
-                 "5" = WFLAS2,
-                 "6" = CFLAS)
+                 "2" = CSALT,
+                 "3" = CFLAS)
     return(DF)
   })
   
@@ -97,11 +94,8 @@ shinyServer(function(input, output, session) {
   whichFilename0 <- reactive({
     DF <- switch(input$Experiment0,
                  "1" = "WSALT.csv",
-                 "2" = "WTEMP.csv",
-                 "3" = "CSALT.csv",
-                 "4" = "WFLAS.csv",
-                 "5" = "WFLAS2.csv",
-                 "6" = "CFLAS.csv")
+                 "2" = "CSALT.csv",
+                 "3" = "CFLAS.csv")
     return(DF)
   })
   
@@ -109,6 +103,13 @@ shinyServer(function(input, output, session) {
   # render a data table for all data form selected experiment
   output$Table0a <- renderDataTable({
     whichExperiment0()[,1:13]
+  }, options = list(pageLength = 10) )
+  
+  ###
+  # render a data table for the RNA
+  output$Table0d <- renderDataTable({
+    # load the RNA data
+    read.csv("./RNA_PROGRESS_2015-03-02.csv", header=TRUE)
   }, options = list(pageLength = 10) )
   
   ###############################
