@@ -62,11 +62,10 @@ shinyServer(function(input, output, session) {
   source("./load_prep_data.R")
   ALLDATA <- load_prep_data()
   
-  DAT <- ALLDATA[[1]]
   WTEMPsplit <- ALLDATA[[2]]
   WTEMP <- ALLDATA[[3]]
   WSALTsplit <- ALLDATA[[4]]
-  WSALT <- rbind(ALLDATA[[5]])
+  WSALT <- ALLDATA[[5]]
   WTEMPslopes <- ALLDATA[[6]]
   WSALTslopes <- ALLDATA[[7]]
   CSALT <- ALLDATA[[8]]

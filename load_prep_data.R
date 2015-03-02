@@ -2,7 +2,6 @@ load_prep_data <- function() {
 library(plyr)
 
 # read all experiments: waller_salinity, waller_temperature, waller_flasks, cryptica_salinity, ...
-Wfami <- read.csv("./WFAMI.csv", header=TRUE)
 Wsalt <- read.csv("./WSALT.csv", header=TRUE)
 Wtemp <- read.csv("./WTEMP.csv", header=TRUE)
 Wflas <- read.csv("./WFLAS.csv", header=TRUE)
@@ -45,12 +44,10 @@ getSlope <- function(x) { coefficients(lm(formula=lnRF ~ trDay, data=x, na.actio
 # bind the familiarizing and full
 # salinity trial for waller creek
 
-Wsaltall <- rbind(Wfami,Wsalt)
-
 WTEMP <- MUTATE(Wtemp)
-WSALT <- MUTATE(Wsaltall)
+WSALT <- MUTATE(Wsalt)
 CSALT <- MUTATE(Csalt)
-Wfami <- MUTATE(Wfami)
+Wfami <- NULL
 Wflas <- MUTATE(Wflas)
 Wflas2 <- MUTATE(Wflas2)
 Cflas <- MUTATE(Cflas)
