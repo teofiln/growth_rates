@@ -16,10 +16,11 @@ Cflas <- read.csv("./CFLAS.csv", header=TRUE)
 
 # function to reformat the datasets
 MUTATE <- function(x) { mutate(.data=x,
-                               # Date = as.Date(as.character(Date)),
+                                Date = as.Date(as.character(Date)),
                                 Rep=factor(Replicate),
-                                seqRep=factor(Transfer),
-                                Transfer=as.numeric(Transfer), 
+                                #seqRep=factor(Transfer),
+                                Transfer=as.numeric(Transfer),
+                                seqRep=factor(LETTERS[Transfer]),
                                 Treatment=factor(Treatment),
                                 Temperature=factor(Temperature),
                                 Media=factor(Media),
@@ -41,8 +42,13 @@ getSlope <- function(x) { coefficients(lm(formula=lnRF ~ trDay, data=x, na.actio
 # Reformat the datasets #
 #########################
 
+# bind the familiarizing and full
+# salinity trial for waller creek
+
+Wsaltall <- rbind(Wfami,Wsalt)
+
 WTEMP <- MUTATE(Wtemp)
-WSALT <- MUTATE(Wsalt)
+WSALT <- MUTATE(Wsaltall)
 CSALT <- MUTATE(Csalt)
 Wfami <- MUTATE(Wfami)
 Wflas <- MUTATE(Wflas)
@@ -81,8 +87,11 @@ slopesTemp <- ddply(.data=WTEMPnoZero,
 # ancovas for Waller Creek salinity    #
 ########################################
 
+# remove the first three transfers w/o replication
+WSALTnoZero <- droplevels(WSALT[- which(WSALT$Transfer < 4), ])
+
 # remove Day 0
-WSALTnoZero <- droplevels(WSALT[- which(WSALT$Hour == 0), ])
+WSALTnoZero <- droplevels(WSALTnoZero[- which(WSALTnoZero$Hour == 0), ])
 
 # remove Transfer F (start and end data only)
 WSALTnoZero <- droplevels(WSALTnoZero[- which(WSALTnoZero$seqRep == "F"), ])

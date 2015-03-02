@@ -32,18 +32,18 @@ shinyUI(fluidPage(theme = shinytheme("flatly"),
         wellPanel(
           HTML("<button type='button' class='btn btn-info' data-toggle='collapse' data-target='#newData'>Upload new data</button>"),
           div(id = "newData", class = "collapse",
-            checkboxInput('header', 'Header', FALSE),
-            numericInput('skip_lines', label="How many lines to skip", value=0),
-            radioButtons('sep', 'Separator',
-              c(Comma=',',
-              Semicolon=';',
-              Tab='\t'),
-              selected='\t'),
-            radioButtons('quote', 'Quote',
-              c(None='',
-              'Double Quote'='"',
-              'Single Quote'="'"),
-              selected='"'),
+#             checkboxInput('header', 'Header', FALSE),
+#             numericInput('skip_lines', label="How many lines to skip", value=0),
+#             radioButtons('sep', 'Separator',
+#               c(Comma=',',
+#               Semicolon=';',
+#               Tab='\t'),
+#               selected='\t'),
+#             radioButtons('quote', 'Quote',
+#               c(None='',
+#               'Double Quote'='"',
+#               'Single Quote'="'"),
+#               selected=''),
             numericInput("numTreat", "Number of treatments", value = 5),
             numericInput("numStrain", "Number of strains", value = 5),
             tags$hr(),
@@ -54,11 +54,9 @@ shinyUI(fluidPage(theme = shinytheme("flatly"),
                         'text/tab-separated-values',
                         'text/plain',
                         '.csv',
-                        '.tsv')
-            ),
-            tags$hr(),
-            actionButton("submitNewData",
-              label="Submit new data")
+                        '.tsv') ),
+             tags$hr(),
+             actionButton("submitNewData", "Submit new data")
             ) # end collapsable div
           ), # end wellPanel
         wellPanel(
@@ -95,81 +93,81 @@ shinyUI(fluidPage(theme = shinytheme("flatly"),
         ) # end sidebarLayout
     ), # end tab0
                                                   
-              tabPanel("Growth curves", value = "tab1",
-                       sidebarLayout(fluid = TRUE,
-                         sidebarPanel(width = 3,
-                                      radioButtons("Experiment1",
-                                                   label = h5("Experiment"),
-                                                   choices = list("C. wallercreekii tubes salinity" = 1, 
-                                                                  "C. wallercreekii tubes temperature" = 2, 
-                                                                  "C. cryptica tubes salinity" = 3, 
-                                                                  "C. wallercreekii flasks salinity" = 4, 
-                                                                  "C. wallercreekii flasks 2 salinity" = 5,
-                                                                  "C. cryptica flasks salinity" = 6),
-                                                   selected = 1),
-                                      HTML("<button type='button' class='btn btn-info' data-toggle='collapse' data-target='#PlotControls'>Customize</button>"),
-                                      uiOutput("whichSelectInput1")
-                                      ), # end sidebarPanel
-                         mainPanel(width = 9,
-                                       plotOutput('Plot1', height = 800)
-                                   ) # end mainPanel
-                          ) # end first sidebarLayot
-                       ), # end first tab
+    tabPanel("Growth curves", value = "tab1",
+      sidebarLayout(fluid = TRUE,
+        sidebarPanel(width = 3,
+          radioButtons("Experiment1",
+            label = h5("Experiment"),
+            choices = list("C. wallercreekii tubes salinity" = 1, 
+                           "C. wallercreekii tubes temperature" = 2, 
+                           "C. cryptica tubes salinity" = 3, 
+                           "C. wallercreekii flasks salinity" = 4, 
+                           "C. wallercreekii flasks 2 salinity" = 5,
+                           "C. cryptica flasks salinity" = 6),
+            selected = 1),
+          HTML("<button type='button' class='btn btn-info' data-toggle='collapse' data-target='#PlotControls'>Customize</button>"),
+          uiOutput("whichSelectInput1")
+          ), # end sidebarPanel
+        mainPanel(width = 9,
+          plotOutput('Plot1', height = 800)
+        ) # end mainPanel
+      ) # end sidebarLayot
+    ), # end tab
             
-            tabPanel("Compare slopes", value = "tab2",
-                     sidebarLayout(
-                       sidebarPanel(width = 3,
-                                    radioButtons("Experiment2",
-                                                 label = h5("Experiment"),
-                                                 choices = list("C. wallercreekii tubes salinity" = 1, 
-                                                                "C. wallercreekii tubes temperature" = 2, 
-                                                                "C. cryptica tubes salinity" = 3),
-                                                 selected = 1),
-                                    HTML("<button type='button' class='btn btn-info' data-toggle='collapse' data-target='#PlotControls2'>Customize</button>"),
-                                    uiOutput("whichSelectInput")
-                                    ),
-                       mainPanel(width = 9,
-                                 plotOutput('Plot2', height = 500),
-                                 tableOutput('TableAOV')
-                                 ) # end mainPanel
-                       ) # end second sidebarPanel
-                     ), # end second tab
+    tabPanel("Compare slopes", value = "tab2",
+      sidebarLayout(
+        sidebarPanel(width = 3,
+          radioButtons("Experiment2",
+            label = h5("Experiment"),
+            choices = list("C. wallercreekii tubes salinity" = 1, 
+                           "C. wallercreekii tubes temperature" = 2, 
+                           "C. cryptica tubes salinity" = 3),
+            selected = 1),
+          HTML("<button type='button' class='btn btn-info' data-toggle='collapse' data-target='#PlotControls2'>Customize</button>"),
+          uiOutput("whichSelectInput")
+          ), # end sidebarPanel
+        mainPanel(width = 9,
+          plotOutput('Plot2', height = 500),
+          tableOutput('TableAOV')
+        ) # end mainPanel
+      ) # end sidebarPanel
+    ), # end tab
 
-            tabPanel("Growth rates through time", value = "tab4",
-                     sidebarLayout(
-                       sidebarPanel(width = 3,
-                                    radioButtons("Experiment4",
-                                                 label = h5("Experiment"),
-                                                 choices = list("C. wallercreekii tubes salinity" = 1, 
-                                                                "C. wallercreekii tubes temperature" = 2, 
-                                                                "C. cryptica tubes salinity" = 3),
-                                                 selected = 1),
-                                    HTML("<button type='button' class='btn btn-info' data-toggle='collapse' data-target='#PlotControls4'>Customize</button>"),
-                                    uiOutput("whichCheckBoxInput4")#,
-                       ),
-                       mainPanel(width = 9,
-                                 plotOutput('Plot4', height = 800)
-                       ) # end mainPanel
-                     ) # end third sidebarPanel
-            ), # end third tab
+    tabPanel("Growth rates through time", value = "tab4",
+      sidebarLayout(
+        sidebarPanel(width = 3,
+          radioButtons("Experiment4",
+            label = h5("Experiment"),
+            choices = list("C. wallercreekii tubes salinity" = 1, 
+                           "C. wallercreekii tubes temperature" = 2, 
+                           "C. cryptica tubes salinity" = 3),
+            selected = 1),
+          HTML("<button type='button' class='btn btn-info' data-toggle='collapse' data-target='#PlotControls4'>Customize</button>"),
+          uiOutput("whichCheckBoxInput4")#,
+          ), # end sidebarPanel
+        mainPanel(width = 9,
+          plotOutput('Plot4', height = 800)
+        ) # end mainPanel
+      ) # end sidebarPanel
+    ), # end tab
 
-            tabPanel("Compare growth rates", value = "tab3",
-                     sidebarLayout(
-                       sidebarPanel(width = 3,
-                                    radioButtons("Experiment3",
-                                                 label = h5("Experiment"),
-                                                 choices = list("C. wallercreekii tubes salinity" = 1, 
-                                                                "C. wallercreekii tubes temperature" = 2, 
-                                                                "C. cryptica tubes salinity" = 3),
-                                                 selected = 1),
-                                    HTML("<button type='button' class='btn btn-info' data-toggle='collapse' data-target='#PlotControls3'>Customize</button>"),
-                                    uiOutput("whichCheckBoxInput3")#,
-                       ),
-                       mainPanel(width = 9,
-                                 plotOutput('Plot3', height = 800)#,
-                       ) # end mainPanel
-                     ) # end fourth sidebarPanel
-                  ) # end fourth tab
-        ) # end tabsetPanel
+    tabPanel("Compare growth rates", value = "tab3",
+      sidebarLayout(
+        sidebarPanel(width = 3,
+          radioButtons("Experiment3",
+            label = h5("Experiment"),
+            choices = list("C. wallercreekii tubes salinity" = 1, 
+                           "C. wallercreekii tubes temperature" = 2, 
+                           "C. cryptica tubes salinity" = 3),
+            selected = 1),
+          HTML("<button type='button' class='btn btn-info' data-toggle='collapse' data-target='#PlotControls3'>Customize</button>"),
+          uiOutput("whichCheckBoxInput3")#,
+          ), # end sidebarPanel
+        mainPanel(width = 9,
+          plotOutput('Plot3', height = 800)#,
+        ) # end mainPanel
+      ) # end sidebarPanel
+    ) # end tab
+  ) # end tabsetPanel
 
 )) # end shinyUI and fluidPage

@@ -27,7 +27,7 @@ shinyServer(function(input, output, session) {
   WTEMPsplit <- ALLDATA[[2]]
   WTEMP <- ALLDATA[[3]]
   WSALTsplit <- ALLDATA[[4]]
-  WSALT <- rbind(ALLDATA[[13]], ALLDATA[[5]])
+  WSALT <- rbind(ALLDATA[[5]])
   WTEMPslopes <- ALLDATA[[6]]
   WSALTslopes <- ALLDATA[[7]]
   CSALT <- ALLDATA[[8]]
@@ -53,25 +53,113 @@ shinyServer(function(input, output, session) {
                  "6" = CFLAS)
     return(DF)
   })
+  
+  # render all the data
+  output$Table0a <- renderDataTable({
+    whichExperiment0()[,1:13]
+  }, options = list(pageLength = 10) )
+  
+  ###
+  # routines for processing new data
+  
+  # read and prepare the new data sheet
+  readNewData <- reactive({
+    inFile <- input$file1
+    
+    if (is.null(inFile))
+      return(NULL)
+    
+#     read.csv(inFile$datapath, header = input$header, skip=input$skip_lines,
+#              sep = input$sep, quote = input$quote)
 
+  read.csv(inFile$datapath, header = FALSE, skip = 0, sep = "\t", quote = "")
+  })
+  
+  # helper for transforming the metadata for a new day
+  makeMetaData <- function(dat.fram) {
+    out <- mutate(.data=dat.fram,
+                  Date=Date + 1,
+                  Day=Day + 1,
+                  Hour=Hour + 24)
+    return(out)
+  }
+  
+  # function to reformat the dataset
+  MUTATE <- function(x) {
+    out <- mutate(.data=x,
+             Date=as.Date(as.character(Date)),
+             Rep=factor(Replicate),
+             Transfer=as.numeric(Transfer), 
+             seqRep=LETTERS[Transfer],
+             Treatment=factor(Treatment),
+             Temperature=factor(Temperature),
+             Media=factor(Media),
+             Experiment=factor(Experiment),
+             Strain=factor(Strain),
+             lnRF=log(RF-Rfctrl),
+             trDay=as.integer((Hour/24)+1))
+    return(out)
+    }
+  
+  # prep the new data
+  prepNewData <- reactive({
+    if (is.null(readNewData()))
+      return(NULL)
+    
+    newData <- data.frame(readNewData())
+    DF <- whichExperiment0()
+    META <- DF[DF$Day==max(DF$Day) & DF$Transfer==max(DF$Transfer), ]
+    newDay <- makeMetaData(META)
+    
+    blanks <- tail(newData$V2, n=input$numTreat)
+    dataLen <- nrow(newData) - input$numTreat
+    
+    newDay$RF <- newData[1:dataLen, 2]
+    newDay$Rfctrl <- rep(blanks, length.out=dataLen, each=input$numStrain)
+    newDay <- MUTATE(newDay)
+    return(newDay)
+  })
+
+  # render the new data table
+  output$Table0b <- renderDataTable({
+    prepNewData()[,1:13]
+  }, options = list(pageLength = 10) )
+  
+  # commit the new data to main experiment file
+  observe({
+    if (input$submitNewData == 0)
+      return()
+    
+    #input$submitNewData
+    isolate({
+      APPEND <- rbind(whichExperiment0(), prepNewData())
+      write.csv(APPEND, file="./TEST.csv")
+      print("New data submitted")
+    })
+  })
+  
+  ###
+  # routines for creating, displaying and downloading transfer sheets
+  # need code for appending the transfer data to experiment data frame
+  
   # create a spreadsheet for transfer
   createTransfer <- reactive({
     input$calculateTransferVolumes
-   # isolate(
-      DF <- whichExperiment0()
-      Today <- DF[DF$Day==max(DF$Day), ]
-      
-      VOL <- input$finalVolume
-      RFU <- input$desiredRFU
-      
-      out <- mutate(.data = Today,
-                    VolCul = round((RFU * VOL)/(Today$RF-Today$Rfctrl), 2),
-                    VolMed = round(VOL - VolCul, 2))
-   # )
+    # isolate(
+    DF <- whichExperiment0()
+    Today <- DF[DF$Day==max(DF$Day) & DF$Transfer==max(DF$Transfer), ]
+    
+    VOL <- input$finalVolume
+    RFU <- input$desiredRFU
+    
+    out <- mutate(.data = Today,
+                  VolCul = round((RFU * VOL)/(Today$RF-Today$Rfctrl), 2),
+                  VolMed = round(VOL - VolCul, 2))
+    # )
     return(out[,c(7,10,14:15,12:13,18:19)])
   })
   
-  # download the spreadsheet
+  # download the transfer spreadsheet
   output$downloadTransferSheet <- downloadHandler(
     filename =  function() {
       paste("Transfer_", Sys.Date(), '.csv', sep='')
@@ -81,35 +169,11 @@ shinyServer(function(input, output, session) {
     },
     contentType='text/csv'
   )
-  
-  # render all the data
-  output$Table0a <- renderDataTable({
-    whichExperiment0()[,1:13]
-  }, options = list(pageLength = 10) )
-  
-  # prepare and render the new data table
-  output$Table0b <- renderDataTable({
-    inFile <- input$file1
-    
-    if (is.null(inFile))
-      return(NULL)
-    
-    out <- read.csv(inFile$datapath, header = input$header, skip=input$skip_lines,
-                    sep = input$sep, quote = input$quote)
-    colnames(out) <- c("Sample", "Fluorescence", "Unit")
-    blanks <- tail(out$Fluorescence, input$numTreat)
-    out <- out[1:(nrow(out) - input$numTreat), ]
-    out$Blank <- rep(blanks, length.out=nrow(out), each=input$numStrain)
-    
-    out <- out[,c(1,2,4,3)]
-    return(out)
-    
-  }, options = list(pageLength = 10) )
-  
+
   output$Table0c <- renderDataTable({
     createTransfer()
   }, options = list(pageLength = 10) )
-  
+
   ##############################################
   ##     end browse data tab                  ##
   ##############################################
@@ -170,6 +234,9 @@ shinyServer(function(input, output, session) {
   # strain, treatment and transfer range
   # in conditional panels
   whichSubset1 <- reactive({
+    if (is.null(whichExperiment1()))
+      return(NULL)
+    
     DF <- isolate( whichExperiment1() )
     DF <- DF[which(DF$Strain %in% input$chooseStrain1 & 
                      DF$Treatment %in% input$chooseTreatment1 & 
@@ -199,17 +266,16 @@ shinyServer(function(input, output, session) {
   # render with control for aspect ratio
   # and logic for log scale
   output$Plot1 <- renderPlot({
-    if (input$logScale==TRUE) {
-    pl1() + coord_fixed(ratio=input$aspect_ratio1) + 
-      ylab("RFU (log10 scale)") +
-      scale_y_continuous(trans=log10_trans(),
-                         breaks = trans_breaks("log10", function(x) 10^x, n=3),
-                         labels = trans_format("log10", math_format(10^.x))) 
-    } else {
+    if (!isTRUE(input$logScale)) {
       pl1() + coord_fixed(ratio=0.001) + ylab("RFU")
+    } else {
+      pl1() + coord_fixed(ratio=input$aspect_ratio1) + 
+        ylab("RFU (log10 scale)") +
+        scale_y_continuous(trans=log10_trans(),
+                           breaks = trans_breaks("log10", function(x) 10^x, n=3),
+                           labels = trans_format("log10", math_format(10^.x)))
     }
   })
-
   ##############################################
   ##          end growth curves tab           ##
   ##############################################
@@ -265,6 +331,9 @@ shinyServer(function(input, output, session) {
   
   # choose the subject (combination of strain and treatment)
   whichSubset2 <- reactive({
+    if (is.null(whichExperiment2()))
+      return(NULL)
+    
     DF <- whichExperiment2()
     DF <- DF[which(DF$Strain == input$chooseStrain & DF$Treatment == input$chooseTreatment), ]
     DF <- DF[which(DF$Transfer >= input$Transfer2[1] & DF$Transfer <= input$Transfer2[2]), ]
@@ -424,7 +493,10 @@ shinyServer(function(input, output, session) {
   
   # choose the subject (combination of strain and treatment)
   whichSubset4 <- reactive({
-    DF <- isolate( whichExperiment4() )
+    if (is.null(whichExperiment4()))
+      return(NULL)
+    
+    DF <- whichExperiment4()
     DF <- DF[which(DF$Strain %in% input$chooseStrain4 & DF$Treatment %in% input$chooseTreatment4), ]
     DF <- DF[which(as.numeric(DF$seqRep) >= input$Transfer4[1] & as.numeric(DF$seqRep) <= input$Transfer4[2]), ]
     return(DF)
@@ -538,8 +610,7 @@ shinyServer(function(input, output, session) {
                                    selected = levels(DF$Treatment)[1:5]),
                 radioButtons(inputId = "chooseMeasure3", label = h5("Measure"),
                              choices = list("Growth rate" = 1,
-                                            "Divisions per day" = 2,
-                                            "Doubling time" = 3 ),
+                                            "Divisions per day" = 2),
                              selected = 1),
                 sliderInput(inputId = "Transfer3", label = h5("Transfer Range"), 
                             min = min(as.numeric(DF$seqRep)), 
@@ -556,7 +627,10 @@ shinyServer(function(input, output, session) {
   
   # choose the subject (combination of strain and treatment)
   whichSubset3 <- reactive({
-    DF <- isolate( whichExperiment3() )
+    if (is.null(whichExperiment3()))
+      return(NULL)
+    
+    DF <- whichExperiment3()
     DF <- DF[which(DF$Strain %in% input$chooseStrain3 & DF$Treatment %in% input$chooseTreatment3), ]
     DF <- DF[which(as.numeric(DF$seqRep) >= input$Transfer3[1] & as.numeric(DF$seqRep) <= input$Transfer3[2]), ]
     return(DF)
@@ -585,8 +659,7 @@ shinyServer(function(input, output, session) {
     DAT <- getMean()
     out3 <- switch(input$chooseMeasure3,
                    "1" = DAT[,1:4],
-                   "2" = DAT[,c(1:2,5:6)],
-                   "3" = DAT[,c(1:2,7:8)] )
+                   "2" = DAT[,c(1:2,5:6)])
     colnames(out3) <- c("Strain", "Treatment", "MEAN", "SD")
     return(out3)
   })
