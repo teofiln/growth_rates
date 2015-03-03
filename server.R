@@ -161,7 +161,7 @@ shinyServer(function(input, output, session) {
     isolate({
       APPEND <- rbind(whichExperiment0(), prepNewData())
       write.csv(APPEND, file=whichFilename0(), row.names=FALSE)
-      output$transferSubmitted <- renderText({HTML("New data submitted. Refresh the browser to view.")})
+      output$uploadSubmitted <- renderText({HTML("New data submitted. Refresh the browser to view.")})
     })
   })
   

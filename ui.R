@@ -17,6 +17,9 @@ shinyUI(fluidPage(theme = shinytheme("flatly"),
         wellPanel(
           HTML("<button type='button' class='btn btn-info' data-toggle='collapse' data-target='#newData'>Upload new data</button>"),
           div(id = "newData", class = "collapse",
+#               tags$hr(),
+#               HTML("Enter the number of strains and treatments based on the selected experiment and select the tab-delimited file containing in vivo relative fluorescence."),
+#               tags$hr(),
 #             checkboxInput('header', 'Header', FALSE),
 #             numericInput('skip_lines', label="How many lines to skip", value=0),
 #             radioButtons('sep', 'Separator',
@@ -41,9 +44,12 @@ shinyUI(fluidPage(theme = shinytheme("flatly"),
                         #'.csv',
                         '.tsv') ),
              tags$hr(),
-             actionButton("submitNewData", "Submit new data"),
+             strong("Caution: Clicking 'Submit new data' will add a day's worth of measurements to the dataset. 
+                    Make sure the correct file is loaded before commiting the changes."),
              tags$hr(),
-             h4(textOutput("uploadSubmitted!"))
+             actionButton("submitNewData", "Submit new data", class='btn btn-danger'),
+             tags$hr(),
+             h4(textOutput("uploadSubmitted"))
             ) # end collapsable div
           ), # end wellPanel
         wellPanel(
@@ -54,13 +60,13 @@ shinyUI(fluidPage(theme = shinytheme("flatly"),
             label="Final volume (mL) in new transfer vessel", value=4),
           numericInput("desiredRFU",                       
             label="Fluorescence (RFU/mL) at start of next transfer", value=500),
-          actionButton("calculateTransfer", label="Calculate"),
-          downloadButton("downloadTransferSheet", label="Download"),
+          actionButton("calculateTransfer", label="Calculate", class='btn btn-warning'),
+          downloadButton("downloadTransferSheet", label="Download", class='btn btn-warning'),
           hr(),
           strong("Caution: Clicking 'Submit Transfer' will add a day's worth of measurements to the dataset. 
-                  Use only when Transfer is actually performed!"),
+                  Use only when Transfer is actually performed."),
           hr(),
-          actionButton("submitTransfer", label="Submit Transfer"),
+          actionButton("submitTransfer", label="Submit Transfer", class='btn btn-danger'),
           tags$hr(),
           h4(textOutput("transferSubmitted!"))
           ) # end collapsible div
