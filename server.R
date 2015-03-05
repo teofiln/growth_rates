@@ -147,6 +147,7 @@ shinyServer(function(input, output, session) {
     blanks <- tail(newData$V2, n=input$numTreat)
     dataLen <- nrow(newData) - input$numTreat
     
+    newDay <- newDay[1:dataLen, ]
     newDay$RF <- newData[1:dataLen, 2]
     newDay$Rfctrl <- rep(blanks, length.out=dataLen, each=input$numStrain)
     newDay <- MUTATE(newDay)

@@ -8,31 +8,36 @@ output:
     toc_depth: 6
 ---
 
-### 2015-03-04
-
+### 2015-03-05
 #### C. wallercreekii tubes:
-
-  - Measurements
-  - Inoculated tubes for transfer W
-  - Reduced experiments to single replicates. Transferred replicate 1 with starting RF = 200. Preserved other replicates.
+  - Measurements (YL)
   
 #### C. wallercreekii flasks:
-
-  - Measurements
-  - Decided not to extract RNA. Some growth curves look wonky. Cultures are also sparse, could use a couple more days before extracting.
+  - Measurements (TN)
   
 #### C. cryptica tubes:
-
-  - Measurements
+  - Measurements (YL)
   
 #### C. cryptica flasks:
-
-  - Measurements
-  - No RNA extraction today. Some cultures are ready but delay due to filter holders.
+  - Measurements (TN)
+  - 
   
-#### Other:
-
-  - Preserved with formalin C. cryptica transfer J.
-  - Done with digestion of transfer G for C. cryptica. Rinsing and slides next.
+* * * * * 
+### 2015-03-04
+#### C. wallercreekii tubes:
+  - Measurements (KN)
+  - Inoculated tubes for transfer W (KN)
+  - Reduced experiments to single replicates. Transferred replicate 1 with starting RF = 200. Preserved other replicates. (TN)
   
+#### C. wallercreekii flasks:
+  - Measurements (TN)
+  - Decided not to extract RNA. Some growth curves look wonky. Cultures are also sparse, could use a couple more days before extracting. (TN)
+  
+#### C. cryptica tubes:
+  - Measurements (KN)
+  
+#### C. cryptica flasks:
+  - Measurements (TN)
+  - No RNA extraction today. Some cultures are ready but delay due to filter holders. (TN)
+
 * * * * * 
