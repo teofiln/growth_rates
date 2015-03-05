@@ -68,7 +68,7 @@ shinyUI(fluidPage(theme = shinytheme("flatly"),
           hr(),
           actionButton("submitTransfer", label="Submit Transfer", class='btn btn-danger'),
           tags$hr(),
-          h4(textOutput("transferSubmitted!"))
+          h4(textOutput("transferSubmitted"))
           ) # end collapsible div
         ) # end wellPanel
       ), # end sidebarPanel

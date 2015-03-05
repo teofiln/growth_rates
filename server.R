@@ -160,7 +160,7 @@ shinyServer(function(input, output, session) {
     #input$submitNewData
     isolate({
       APPEND <- rbind(whichExperiment0(), prepNewData())
-      write.csv(APPEND, file=whichFilename0(), row.names=FALSE)
+      write.csv(APPEND, file=paste("/home/teo/work/SALINITY_EXPERIMENTS/growth_rates/", whichFilename0(), sep=""), row.names=FALSE)
       output$uploadSubmitted <- renderText({HTML("New data submitted. Refresh the browser to view.")})
     })
   })
@@ -228,7 +228,7 @@ shinyServer(function(input, output, session) {
     
     isolate({
       APPEND <- rbind(whichExperiment0(), prepTransfer())
-      write.csv(APPEND[,1:13], file=whichFilename0(), row.names=FALSE)
+      write.csv(APPEND, file=paste("/home/teo/work/SALINITY_EXPERIMENTS/growth_rates/", whichFilename0(), sep=""), row.names=FALSE)
       output$transferSubmitted <- renderText({HTML("Transfer data submitted. Refresh the browser to view.")})
     })
   })
