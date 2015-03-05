@@ -164,7 +164,11 @@ shinyUI(fluidPage(theme = shinytheme("flatly"),
           plotOutput('Plot3', height = 800)#,
         ) # end mainPanel
       ) # end sidebarPanel
-    ) # end tab
+    ), # end tab
+
+  tabPanel("Experiments log",
+           includeMarkdown(path = "./Experiments_log.Rmd")
+           )
   ) # end tabsetPanel
 
 )) # end shinyUI and fluidPage

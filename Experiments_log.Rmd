@@ -1,0 +1,38 @@
+---
+title: "Log"
+author: "Teofil Nakov"
+date: "03/04/2015"
+output: 
+  html_document:
+    toc: yes
+    toc_depth: 6
+---
+
+### 2015-03-04
+
+#### C. wallercreekii tubes:
+
+  - Measurements
+  - Inoculated tubes for transfer W
+  - Reduced experiments to single replicates. Transferred replicate 1 with starting RF = 200. Preserved other replicates.
+  
+#### C. wallercreekii flasks:
+
+  - Measurements
+  - Decided not to extract RNA. Some growth curves look wonky. Cultures are also sparse, could use a couple more days before extracting.
+  
+#### C. cryptica tubes:
+
+  - Measurements
+  
+#### C. cryptica flasks:
+
+  - Measurements
+  - No RNA extraction today. Some cultures are ready but delay due to filter holders.
+  
+#### Other:
+
+  - Preserved with formalin C. cryptica transfer J.
+  - Done with digestion of transfer G for C. cryptica. Rinsing and slides next.
+  
+* * * * * 
