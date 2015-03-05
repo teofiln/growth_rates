@@ -83,8 +83,11 @@ shinyServer(function(input, output, session) {
   whichExperiment0 <- reactive({
     DF <- switch(input$Experiment0,
                  "1" = WSALT,
-                 "2" = CSALT,
-                 "3" = CFLAS)
+                 "2" = WFLAS,
+                 "3" = WFLAS2,
+                 "4" = CSALT,
+                 "5" = CFLAS,
+                 "6" = WTEMP)
     return(DF)
   })
   
@@ -93,8 +96,11 @@ shinyServer(function(input, output, session) {
   whichFilename0 <- reactive({
     DF <- switch(input$Experiment0,
                  "1" = "WSALT.csv",
-                 "2" = "CSALT.csv",
-                 "3" = "CFLAS.csv")
+                 "2" = "WFLAS.csv",
+                 "3" = "WFLAS2.csv",
+                 "4" = "CSALT.csv",
+                 "5" = "CFLAS.csv",
+                 "6" = "WTEMP.csv")
     return(DF)
   })
   
