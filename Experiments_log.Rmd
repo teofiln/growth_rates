@@ -14,20 +14,26 @@ output:
   
 #### C. wallercreekii flasks:
   - Measurements (TN)
+  - Some cultures wonky (as before). 
+  - RNA extraction for:
+      - 164-11 @ 2 - fine
+      - 164-11 @ 12 - fine
+      - 164-11 @ 36 - small pellet given density
+      - 169-30 @ 24 - wouldn't pellet. No extraction.
   
 #### C. cryptica tubes:
   - Measurements (YL)
   
 #### C. cryptica flasks:
   - Measurements (TN)
-  - 
+  - Cultures look good. Starting to get dense. No filters yet, though. Wait another day before RNA extraction and/or transfer.
   
 * * * * * 
 ### 2015-03-04
 #### C. wallercreekii tubes:
   - Measurements (KN)
   - Inoculated tubes for transfer W (KN)
-  - Reduced experiments to single replicates. Transferred replicate 1 with starting RF = 200. Preserved other replicates. (TN)
+  - Reduced experiment to single replicate. Transferred replicate 1 with starting RF = 200. Preserved other replicates. (TN)
   
 #### C. wallercreekii flasks:
   - Measurements (TN)
