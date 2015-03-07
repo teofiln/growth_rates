@@ -8,6 +8,33 @@ output:
     toc_depth: 6
 ---
 
+### 2015-03-06
+#### C. wallercreekii tubes:
+  - Measurements (KN)
+  
+#### C. wallercreekii flasks:
+  - Two flasks left
+  - One of interest 156-4 @ 36 is growing _very slowly_
+  - Measurements (TN)
+  
+#### C. cryptica tubes:
+  - Measurements (KN)
+  
+#### C. cryptica flasks:
+  - Filter holders arrived 
+  - Measurements 1 hour early to start RNA extraction earlier (TN)
+  - Cultures look denser. Golden brown tinge. A bit of lawn in densest culture.
+  - RNA extraction batch 1 (total=10): (TN)
+      - 331 @ 2, 12, 24
+      - 332 @ 2, 12, 24
+      - 333 @ 2, 12
+      - 1263 @ 2, 12
+    - Filtering works OK. A bit tedious.
+    - Concentrations high in comparison. Due to much denser cultures
+    - Two RNA preps with concentration too high for Qubit HS assay. Need to measure dillutions.
+    
+* * * * * 
+
 ### 2015-03-05
 #### C. wallercreekii tubes:
   - Measurements (YL)
