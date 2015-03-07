@@ -8,6 +8,24 @@ output:
     toc_depth: 6
 ---
 
+### 2015-03-07
+#### C. wallercreekii tubes:
+  - Measurements (TN)
+  
+#### C. wallercreekii flasks:
+  - Two flasks left
+  - One of interest 156-4 @ 36 is growing _very slowly_
+  - Measurements (TN)
+  
+#### C. cryptica tubes:
+  - Measurements (YL)
+  - Transfer L: down to 200 RFU (YL)
+  
+#### C. cryptica flasks:
+  - Measurements (TN)
+  
+* * * * *
+
 ### 2015-03-06
 #### C. wallercreekii tubes:
   - Measurements (KN)
