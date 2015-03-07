@@ -134,12 +134,21 @@ shinyServer(function(input, output, session) {
   read.csv(inFile$datapath, header = FALSE, skip = 0, sep = "\t", quote = "")
   })
   
+  Upload <- reactive({
+    if (input$clearUpload) {
+      out <- NULL
+    } else {
+      out <- readNewData()
+    }
+    return(out)
+  })
+
   # prep new data
   prepNewData <- reactive({
-    if (is.null(readNewData()))
+    if (is.null(Upload()))
       return(NULL)
     
-    newData <- data.frame(readNewData())
+    newData <- data.frame(Upload())
     DF <- whichExperiment0()
     META <- DF[DF$Day==max(DF$Day) & DF$Transfer==max(DF$Transfer), ]
     newDay <- makeMetaData(META)
@@ -166,7 +175,7 @@ shinyServer(function(input, output, session) {
     
     #input$submitNewData
     isolate({
-      APPEND <- rbind(whichExperiment0(), prepNewData())
+      APPEND <- rbind(whichExperiment0(), Upload())
       write.csv(APPEND, file=paste("/home/teo/work/SALINITY_EXPERIMENTS/growth_rates/", whichFilename0(), sep=""), row.names=FALSE)
       output$uploadSubmitted <- renderText({HTML("New data submitted. Refresh the browser to view.")})
     })
@@ -197,21 +206,30 @@ shinyServer(function(input, output, session) {
     
     return(out[,c(7,10,14:15,12:13,18:19)])
   })
-  
+
+  Transfer <- reactive({
+    if (input$clearTransfer) {
+      out <- NULL
+    } else {
+      out <- createTransfer()
+    }
+    return(out)    
+  })
+
   # download the transfer spreadsheet
   output$downloadTransferSheet <- downloadHandler(
     filename =  function() {
       paste("Transfer_", Sys.Date(), '.csv', sep='')
     },
     content = function(file) { 
-      write.csv(createTransfer(), file)
+      write.csv(Transfer(), file)
     },
     contentType='text/csv'
   )
   
   # render the transfer table
   output$Table0c <- renderDataTable({
-    createTransfer()
+    Transfer()
   }, options = list(pageLength = 10) )
   
   # prep transfer data
@@ -235,18 +253,12 @@ shinyServer(function(input, output, session) {
       return(NULL)
     
     isolate({
-      APPEND <- rbind(whichExperiment0(), prepTransfer())
+      APPEND <- rbind(whichExperiment0(), Transfer())
       write.csv(APPEND, file=paste("/home/teo/work/SALINITY_EXPERIMENTS/growth_rates/", whichFilename0(), sep=""), row.names=FALSE)
       output$transferSubmitted <- renderText({HTML("Transfer data submitted. Refresh the browser to view.")})
     })
   })
-#   
-#   observe({
-#     
-#     createTransfer() <- NULL
-#   })
-
-
+  
   ####################################
   ##  end processing new transfer   ##
   ####################################
