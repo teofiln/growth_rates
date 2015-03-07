@@ -194,6 +194,7 @@ shinyServer(function(input, output, session) {
     out <- mutate(.data = Today,
                   VolCul = round((RFU * VOL)/(Today$RF-Today$Rfctrl), 2),
                   VolMed = round(VOL - VolCul, 2))
+    
     return(out[,c(7,10,14:15,12:13,18:19)])
   })
   
@@ -239,6 +240,12 @@ shinyServer(function(input, output, session) {
       output$transferSubmitted <- renderText({HTML("Transfer data submitted. Refresh the browser to view.")})
     })
   })
+#   
+#   observe({
+#     
+#     createTransfer() <- NULL
+#   })
+
 
   ####################################
   ##  end processing new transfer   ##

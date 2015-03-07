@@ -65,6 +65,7 @@ shinyUI(fluidPage(theme = shinytheme("flatly"),
             label="Fluorescence (RFU/mL) at start of next transfer", value=500),
           actionButton("calculateTransfer", label="Calculate", class='btn btn-warning'),
           downloadButton("downloadTransferSheet", label="Download", class='btn btn-warning'),
+          actionButton("clearTransfer", label="Clear", class='btn btn-success'),
           hr(),
           strong("Caution: Clicking 'Submit Transfer' will add a day's worth of measurements to the dataset. 
                   Use only when Transfer is actually performed."),
