@@ -32,7 +32,11 @@ output:
     - Filtering works OK. A bit tedious.
     - Concentrations high in comparison. Due to much denser cultures
     - Two RNA preps with concentration too high for Qubit HS assay. Need to measure dillutions.
-    
+  - RNA extraction batch 2 (total=5): (TN)
+      - 333 @ 0, 24
+      - 1263 @ 0, 24, 36
+        - Extracted all that had RF > 10000
+        
 * * * * * 
 
 ### 2015-03-05
