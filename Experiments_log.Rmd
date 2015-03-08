@@ -23,6 +23,11 @@ output:
   
 #### C. cryptica flasks:
   - Measurements (TN)
+  - RNA extraction (total=5): (TN)
+      - 331 @ 0, 36
+      - 332 @ 0, 36
+      - 333 @ 36
+    - Some of these < 10K RFU, so lower RNA concentration is expected
   
 * * * * *
 
