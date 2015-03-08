@@ -171,11 +171,11 @@ shinyServer(function(input, output, session) {
   # commit the new data to main experiment file
   observe({
     if (input$submitNewData == 0)
-      return()
+      return(NULL)
     
     #input$submitNewData
     isolate({
-      APPEND <- rbind(whichExperiment0(), Upload())
+      APPEND <- rbind(whichExperiment0(), prepNewData())
       write.csv(APPEND, file=paste("/home/teo/work/SALINITY_EXPERIMENTS/growth_rates/", whichFilename0(), sep=""), row.names=FALSE)
       output$uploadSubmitted <- renderText({HTML("New data submitted. Refresh the browser to view.")})
     })
