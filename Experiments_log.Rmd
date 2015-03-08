@@ -8,6 +8,19 @@ output:
     toc_depth: 6
 ---
 
+### 2015-03-08
+#### C. wallercreekii tubes:
+  - Measurements (TN)
+  
+#### C. wallercreekii flasks:
+  - One of interest 156-4 @ 36 is growing _very slowly_
+  - Measurements (TN)
+  
+#### C. cryptica tubes:
+  - Measurements (TN)
+  
+* * * * *
+
 ### 2015-03-07
 #### C. wallercreekii tubes:
   - Measurements (TN)
