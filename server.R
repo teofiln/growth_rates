@@ -253,7 +253,7 @@ shinyServer(function(input, output, session) {
       return(NULL)
     
     isolate({
-      APPEND <- rbind(whichExperiment0(), Transfer())
+      APPEND <- rbind(whichExperiment0(), prepTransfer())
       write.csv(APPEND, file=paste("/home/teo/work/SALINITY_EXPERIMENTS/growth_rates/", whichFilename0(), sep=""), row.names=FALSE)
       output$transferSubmitted <- renderText({HTML("Transfer data submitted. Refresh the browser to view.")})
     })
