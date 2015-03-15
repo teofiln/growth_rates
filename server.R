@@ -32,7 +32,7 @@ makeMetaTransfer <- function(dat.fram) {
 }
 
 # function to reformat the dataset
-# after data uload
+# after data upload
 MUTATE <- function(x) {
   out <- mutate(.data=x,
                 Date=as.Date(as.character(Date)),
