@@ -8,6 +8,47 @@ output:
     toc_depth: 6
 ---
 
+### 2015-03-13
+#### C. wallercreekii tubes:
+  - Measurements (KN; YL)
+  
+#### C. cryptica tubes:
+  - Measurements (KN; YL)
+
+### 2015-03-12
+#### C. wallercreekii tubes:
+  - Measurements (KN; YL)
+  
+#### C. cryptica tubes:
+  - Measurements (KN; YL)
+  - Transfer M (KN; YL)
+  
+### 2015-03-11
+#### C. wallercreekii tubes:
+  - Measurements (KN; YL)
+  
+#### C. cryptica tubes:
+  - Measurements (KN; YL)
+
+### 2015-03-10
+#### C. wallercreekii tubes:
+  - Measurements (YL)
+  - Transfer X (YL; TN)
+  
+#### C. cryptica tubes:
+  - Measurements (YL)
+
+### 2015-03-09
+#### C. wallercreekii tubes:
+  - Measurements (KN; YL)
+  
+#### C. wallercreekii flasks:
+  - One of interest 156-4 @ 36 is growing _very slowly_
+  - Measurements (TN)
+  
+#### C. cryptica tubes:
+  - Measurements (KN; YL)
+
 ### 2015-03-08
 #### C. wallercreekii tubes:
   - Measurements (TN)
