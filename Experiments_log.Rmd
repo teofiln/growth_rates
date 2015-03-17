@@ -15,7 +15,14 @@ output:
 #### C. cryptica tubes:
   - Measurements (YL)
   - Transfer N (TN)
+    - Manually edited value for tube #2 that wasn't transferred (RF too low) (TN)
 
+#### C. cryptica flasks:
+  - Inoculated flasks for:
+    - 331 @ 2ppt
+    - 333 @ 2ppt
+  - These had low RINs and bad looking profiles. Try to get better RNA
+  
 ### 2015-03-16
 #### C. wallercreekii tubes:
   - Measurements (KN; YL)

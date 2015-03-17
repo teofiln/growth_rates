@@ -324,3 +324,5 @@ Number,Experiment,Date,Day,Hour,Transfer,Strain,Media,Temperature,Treatment,Repl
 17,crypt_flask,2015-03-07,16,192,2,331,ASW,15,36,3,6390,15.49
 18,crypt_flask,2015-03-07,16,192,2,332,ASW,15,36,3,12761.74,15.49
 19,crypt_flask,2015-03-07,16,192,2,333,ASW,15,36,3,6666.8,15.49
+1,crypt_flask,2015-03-17,20,0,2,331,ASW,15,0,3,500,0
+3,crypt_flask,2015-03-17,20,0,2,333,ASW,15,0,3,500,0
