@@ -8,6 +8,25 @@ output:
     toc_depth: 6
 ---
 
+### 2015-03-22
+#### C. wallercreekii tubes:
+  - Measurements (TN)
+  
+#### C. cryptica tubes & flasks:
+  - Measurements (TN)
+  - Normally this would be a transfer day. But I decided not to transfer today in effort to space out the transfers.
+  
+### 2015-03-21
+#### C. wallercreekii tubes:
+  - Measurements (TN)
+  
+#### C. cryptica tubes & flasks:
+  - Measurements (TN)
+  - RNA extraction for subjects with low RINs in previous attempt:
+    - 331 @ 2
+    - 333 @ 2
+      - protocol as before, except 1 min instead of 1.5 min bead beating
+      
 ### 2015-03-20
 #### C. wallercreekii tubes:
   - Measurements (YL, KN)
