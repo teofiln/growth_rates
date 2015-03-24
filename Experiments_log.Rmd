@@ -8,6 +8,14 @@ output:
     toc_depth: 6
 ---
 
+### 2015-03-24
+#### C. wallercreekii tubes:
+  - Measurements (TN)
+  
+#### C. cryptica tubes & flasks:
+  - Measurements (TN)
+  - Stopped measuring flasks. RNA and RINs look fine.
+
 ### 2015-03-23
 #### C. wallercreekii tubes:
   - Measurements (TN)
