@@ -8,6 +8,13 @@ output:
     toc_depth: 6
 ---
 
+### 2015-04-12
+#### C. wallercreekii tubes:
+  - Measurements (TN)
+  
+#### C. cryptica tubes:
+  - Measurements (TN)
+
 ### 2015-04-11
 #### C. wallercreekii tubes:
   - Measurements (YL)
