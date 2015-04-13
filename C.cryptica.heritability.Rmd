@@ -1,0 +1,216 @@
+---
+title: "Cyclotella cryptica heritability of growth at different salinities"
+date: "04/13/2015"
+output: 
+  html_document:
+    toc: yes
+    toc_depth: 5
+    theme: readable
+---
+
+* * * * *
+
+Goal: Estimate broad sense heritability (repeatability) of growth rates in four strains of _C. cryptica_ at different salinities
+
+* * * * * 
+
+#### Packages and data
+
+```{r}
+setwd("/home/teo/work/SALINITY_EXPERIMENTS/growth_rates")
+
+# read the data
+CSALT <- read.csv("./CSALT.csv", header= TRUE)
+
+# install and load the packages
+# we can probably do this with base R
+# but this package has a nice wrapper
+# for broad sense heritability
+
+## install.packages("heritability")
+library(heritability)
+library(ggplot2)
+library(plyr)
+```
+
+#### Calculate the growth rates
+
+We use the slope of `log(RF) ~ Day` during exponential phase as a measure the growth rate (`r`).
+
+Subset the data to:
+
+  - the last 5 Transfers
+  - between Days 2 and 6
+
+```{r}
+last5 <- droplevels(CSALT[which(CSALT$Transfer > 13 & CSALT$trDay > 1 & CSALT$trDay < 7), ])
+last5$trDay <- last5$trDay-1 # so that the first measurement is at day 1
+last5 <- mutate(last5,
+                Treatment=factor(Treatment),
+                Replicate=factor(Replicate),
+                seqRep=factor(seqRep),
+                trDay=factor(trDay),
+                Rep=factor(Rep),
+                Transfer=factor(Transfer))
+```
+
+Fit all the linear models. Will return a list of `lm` objects.
+
+```{r}
+lm_fits <- dlply(.data=last5,
+                 .variables=.(Treatment, Strain, Rep, seqRep),
+                 .fun=lm, formula=lnRF ~ trDay)
+```
+
+Convert to data frame taking the coefficients of the linear model (intercept, slope)
+
+```{r}
+df_fits <- ldply(.data=lm_fits,
+                 .variables=.(Treatment, Strain, Rep, seqRep),
+                 .fun=coefficients)
+```
+
+Get the average for each Strain, Treatment, Replicate over the last five Transfers
+
+```{r}
+mean_growth <- ddply(.data=df_fits,
+                     .variables=.(Treatment, Strain, Rep),
+                     .fun=summarize,
+                     mean=round(mean(trDay),3))
+#mean_growth
+```
+
+#### Calculate the heritability
+
+##### At 0 ppt
+
+```{r}
+dat.vec <- mean_growth[mean_growth$Treatment==0,]$mean
+gen.vec <- mean_growth[mean_growth$Treatment==0,]$Strain
+
+# calculate repeatability
+Hzero <- repeatability(data.vector = dat.vec, geno.vector = gen.vec)
+#data.frame(H2=Hzero$repeatability, CI=Hzero$conf.int, VG=Hzero$gen.variance,Resid=Hzero$res.variance)
+Hzero
+```
+
+Appears that we have really high heritability for growth at 0 salinity. These are cultures that originate at 36 ppt or 16 ppt.
+
+##### At all salinities
+
+```{r}
+Herit <- function(df) {
+  repeatability(data.vector = df$mean, 
+                geno.vector = df$Strain)
+}
+
+Hall_list <- dlply(.data=mean_growth,
+              .variables=.(Treatment),
+              .fun=Herit)
+
+Heritability_all <- data.frame(matrix(unlist(Hall_list),nrow=5,byrow=TRUE))[,c(1,6:7,2:3)]
+rownames(Heritability_all) <- c(0,2,12,24,36)
+colnames(Heritability_all) <- c("H2","lb","ub","VG","Vres")
+Heritability_all
+
+ggplot(aes(y=H2, x=rownames(Heritability_all)), data=Heritability_all) + 
+  geom_bar(stat="identity", width=.8, fill="indianred4") +
+  geom_errorbar(aes(ymin=lb, ymax=ub), width=.2, data = Heritability_all) +
+  xlab("Salinity") + ylab("Heritability") 
+```
+
+#### Growth curves for comparison
+
+```{r, fig.width=14, fig.height=14}
+ ggplot(data=last5,
+      aes(x=Day, y=RF-Rfctrl, ymax=max(RF)*1.05,
+        group=factor(Rep), shape=factor(Rep),
+        colour=factor(Rep), linetype=factor(Rep))) +
+      geom_line(size=0.6) +
+      geom_point(size=3) +
+      xlab("Day") +
+      facet_grid(Strain ~ Treatment) +
+      theme_bw()
+```
+
+#### Don't average over Transfers
+
+In the analysis above we averaged the 5 estimates per Replicate into a mean slope. Here we'll have two levels of replication:
+
+  - Technical replicates (`Replicate (Rep)`) and
+  - Sequential replicates (`Transfer (seqRep)`)
+
+Start with the data frame with coefficients of the linear models. 
+
+```{r}
+head(df_fits)
+
+Herit2 <- function(df) {
+  repeatability(data.vector = df$trDay, 
+                geno.vector = df$Strain)
+}
+
+# agnostic about seqRep being nested within Rep
+seqRep_Hall_list <- dlply(.data=df_fits,
+              .variables=.(Treatment),
+              .fun=Herit2)
+
+seqRep_Heritability_all <- data.frame(matrix(unlist(seqRep_Hall_list),nrow=5,byrow=TRUE))[,c(1,6:7,2:3)]
+rownames(seqRep_Heritability_all) <- c("0 ppt","2 ppt","12 ppt","24 ppt","36 ppt")
+colnames(seqRep_Heritability_all) <- c("H2","lb","ub","VG","Vres")
+seqRep_Heritability_all
+
+ggplot(aes(y=H2, x=factor(rownames(seqRep_Heritability_all))), data=seqRep_Heritability_all) + 
+  geom_bar(stat="identity", width=.8, fill="indianred4") +
+  geom_errorbar(aes(ymin=lb, ymax=ub), width=.2, data = seqRep_Heritability_all) +
+  xlab("Salinity") + ylab("Heritability")
+```
+
+For comparison, the slopes and their variation 
+
+```{r,fig.width=14}
+rep_means <- ddply(.data=df_fits,
+                   .variables=.(Treatment),
+                   .fun=summarize,
+                   Mean=round(mean(trDay),3),
+                   Sdev=round(sd(trDay),3))
+
+ggplot(aes(y=Mean, x=factor(Treatment)), data=rep_means) + 
+  geom_bar(stat="identity", width=.8, fill="indianred4") +
+  geom_errorbar(aes(ymin=Mean-Sdev, ymax=Mean+Sdev), width=.2, data = rep_means) +
+  xlab("Salinity") + ylab("Growth rate") #+
+  #facet_grid(~Strain)
+```
+
+#### With covariates?
+
+Trying to treat Treatment as a fixed effect
+
+```{r}
+head(df_fits)
+DF <- mutate(.data=df_fits[,c(1,3,4)],
+             Treatment=factor(Treatment),
+             Rep=factor(Rep),
+             seqRep=factor(seqRep))
+
+repeatability(geno.vector = df_fits$Strain, data.vector = df_fits$trDay, covariates.frame = DF)
+```
+
+### Following Wood et al. 1987
+
+- Replicate and Strain are random effects
+- Replicate is nested within Strain and Treatment
+
+```{r}
+library(lme4)
+library(arm)
+
+display(lmer(lnRF ~ trDay*Treatment*Strain*Transfer + (1|Strain/Rep) + (1|Treatment/Rep), data=last5))
+
+```
+
+
+
+
+
+
