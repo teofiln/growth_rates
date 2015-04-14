@@ -10,6 +10,15 @@ output:
 
 ### 2015-04-13
 #### C. wallercreekii tubes:
+  - Measurements (YL)
+  - Transfer AE (TN)
+  
+#### C. cryptica tubes:
+  - Measurements (YL)
+  - Transfer S (TN)
+  
+### 2015-04-13
+#### C. wallercreekii tubes:
   - Measurements (KN; YL)
   
 #### C. cryptica tubes:
