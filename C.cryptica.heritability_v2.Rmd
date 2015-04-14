@@ -14,13 +14,6 @@ output:
 # read the data
 CSALT <- read.csv("./CSALT.csv", header= TRUE)
 
-# install and load the packages
-# we can probably do this with base R
-# but this package has a nice wrapper
-# for broad sense heritability
-
-## install.packages("heritability")
-library(heritability)
 library(ggplot2)
 library(plyr)
 library(car)
@@ -29,7 +22,7 @@ library(arm)
 
 ```
 
-#### Calculate the growth rates
+### Tidy the data
 
 We use the slope of `log(RF) ~ Day` during exponential phase as a measure the growth rate (`r`).
 
@@ -50,71 +43,7 @@ last5 <- mutate(last5,
                 Transfer=factor(Transfer))
 ```
 
-Fit all the linear models. Will return a list of `lm` objects.
-
-```{r}
-lm_fits <- dlply(.data=last5,
-                 .variables=.(Treatment, Strain, Rep, seqRep),
-                 .fun=lm, formula=lnRF ~ trDay)
-```
-
-Convert to data frame taking the coefficients of the linear model (intercept, slope)
-
-```{r}
-df_fits <- ldply(.data=lm_fits,
-                 .variables=.(Treatment, Strain, Rep, seqRep),
-                 .fun=coefficients)
-```
-
-Get the average for each Strain, Treatment, Replicate over the last five Transfers
-
-```{r}
-mean_growth <- ddply(.data=df_fits,
-                     .variables=.(Treatment, Strain, Rep),
-                     .fun=summarize,
-                     mean=round(mean(trDay),3))
-#mean_growth
-```
-
-#### Calculate the heritability
-
-##### At 0 ppt
-
-```{r}
-dat.vec <- mean_growth[mean_growth$Treatment==0,]$mean
-gen.vec <- mean_growth[mean_growth$Treatment==0,]$Strain
-
-# calculate repeatability
-Hzero <- repeatability(data.vector = dat.vec, geno.vector = gen.vec)
-Hzero
-```
-
-Appears that we have really high heritability for growth at 0 salinity. These are cultures that originate at 36 ppt or 16 ppt.
-
-##### At all salinities individually
-
-```{r}
-Herit <- function(df) {
-  repeatability(data.vector = df$mean, 
-                geno.vector = df$Strain)
-}
-
-Hall_list <- dlply(.data=mean_growth,
-              .variables=.(Treatment),
-              .fun=Herit)
-
-Heritability_all <- data.frame(matrix(unlist(Hall_list),nrow=5,byrow=TRUE))[,c(1,6:7,2:3)]
-rownames(Heritability_all) <- c(0,2,12,24,36)
-colnames(Heritability_all) <- c("H2","lb","ub","VG","Vres")
-Heritability_all
-
-ggplot(aes(y=H2, x=rownames(Heritability_all)), data=Heritability_all) + 
-  geom_bar(stat="identity", width=.8, fill="indianred4") +
-  geom_errorbar(aes(ymin=lb, ymax=ub), width=.2, data = Heritability_all) +
-  xlab("Salinity") + ylab("Heritability") 
-```
-
-#### Growth curves for comparison
+### Growth curves for reference
 
 ```{r, fig.width=14, fig.height=14}
  ggplot(data=last5,
@@ -128,54 +57,6 @@ ggplot(aes(y=H2, x=rownames(Heritability_all)), data=Heritability_all) +
       theme_bw()
 ```
 
-#### Don't average over Transfers
-
-In the analysis above we averaged the 5 estimates per Replicate into a mean slope. Here we'll have two levels of replication:
-
-  - Technical replicates (`Replicate (Rep)`) and
-  - Sequential replicates (`Transfer (seqRep)`)
-
-Start with the data frame with coefficients of the linear models. 
-
-```{r}
-head(df_fits)
-
-Herit2 <- function(df) {
-  repeatability(data.vector = df$trDay, 
-                geno.vector = df$Strain)
-}
-
-# agnostic about seqRep being nested within Rep
-seqRep_Hall_list <- dlply(.data=df_fits,
-              .variables=.(Treatment),
-              .fun=Herit2)
-
-seqRep_Heritability_all <- data.frame(matrix(unlist(seqRep_Hall_list),nrow=5,byrow=TRUE))[,c(1,6:7,2:3)]
-rownames(seqRep_Heritability_all) <- c("0 ppt","2 ppt","12 ppt","24 ppt","36 ppt")
-colnames(seqRep_Heritability_all) <- c("H2","lb","ub","VG","Vres")
-seqRep_Heritability_all
-
-ggplot(aes(y=H2, x=factor(rownames(seqRep_Heritability_all))), data=seqRep_Heritability_all) + 
-  geom_bar(stat="identity", width=.8, fill="indianred4") +
-  geom_errorbar(aes(ymin=lb, ymax=ub), width=.2, data = seqRep_Heritability_all) +
-  xlab("Salinity") + ylab("Heritability")
-```
-
-For comparison, the slopes and their variation 
-
-```{r,fig.width=14}
-rep_means <- ddply(.data=df_fits,
-                   .variables=.(Treatment),
-                   .fun=summarize,
-                   Mean=round(mean(trDay),3),
-                   Sdev=round(sd(trDay),3))
-
-ggplot(aes(y=Mean, x=factor(Treatment)), data=rep_means) + 
-  geom_bar(stat="identity", width=.8, fill="indianred4") +
-  geom_errorbar(aes(ymin=Mean-Sdev, ymax=Mean+Sdev), width=.2, data = rep_means) +
-  xlab("Salinity") + ylab("Growth rate") #+
-  #facet_grid(~Strain)
-```
 
 ### Following Wood et al. 1987
 
@@ -200,7 +81,7 @@ display(SS)
 
 No random effects. Apparently these are difficult to estimate/interpret when the number of levels per factor is small. Here we have 4-5 levels per factor, which apparently is not enough for meaningful among block variance estimation (http://glmm.wikidot.com/faq). It might be possible to use these types of models when I combine the C. cryptica and C. wallercreekii data. We'll have 9 Strains and possibly 10 sequential replicates. For now, use simple `lm` fixed effects model without interactions.
 
-For 0 ppt first.
+#### For 0 ppt first.
 
 ```{r}
 last5zero <- droplevels(CSALT[which(CSALT$Treatment == 0 & 
@@ -226,13 +107,13 @@ aovTable
 MSq <- aovTable[,1] / aovTable[,2] # divide SumSq by d.f to get MeanSq
 H2 <- MSq[3]/sum(MSq[3:6]) # Var_strain / (Var_strain + Var_transfer + Var_replicate + Var_residual)
 Vgen <- MSq[3] # Var_strain
-Venv <- MSq[4] + MSq[5] # Var_strain + Var_replicate
+Venv <- MSq[4] + MSq[5] # Var_transfer + Var_replicate
 Vres <- MSq[6] # Var_residual
 
 data.frame(H2,Vgen,Venv,Vres)
 ```
 
-Scale to all Treatments:
+#### Scale to all Treatments:
 
 ```{r}
 linMod <- function(DF) { lm(lnRF ~ trDay+Strain+seqRep+Rep , data=DF)}
@@ -257,8 +138,9 @@ calcHerit <- function(aovTable) {
 broadSenseH <- ldply(.data=aovTable_all, .fun=calcHerit)
 ```
 
-The effects don't have to be random, but we can still take into account the interactions. The procedure here would be to take the average effects of each type of interaction as variance components.
+#### Adding interaction terms
 
+The effects don't have to be random, but we can still take into account the interactions. The procedure here would be to take the average effects of each type of interaction as variance components.
 
 ```{r}
 linMod2 <- function(DF) { lm(lnRF ~ trDay + Strain + seqRep + Rep + Strain:seqRep + Strain:Rep + Rep:seqRep, data=DF)}
@@ -284,12 +166,13 @@ calcHerit2 <- function(aovTable) {
 intBroadSenseH <- ldply(.data=aovTable_all2, .fun=calcHerit2)
 ```
 
-Compare:
+#### Compare
+
+Adding the interactions lowers the heritability and genetic variance. 
 
 ```{r}
 broadSenseH
 intBroadSenseH
-seqRep_Heritability_all
 ```
 
 
