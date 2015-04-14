@@ -1,18 +1,18 @@
 ---
-title: "Cyclotella cryptica heritability of growth at different salinities"
-date: "04/13/2015"
+title: "Cyclotella wallercreekii heritability of growth at different salinities"
+date: "04/14/2015"
 output: 
   html_document:
     toc: yes
     toc_depth: 5
-    theme: readable
+    theme: united
 ---
 
 #### Packages and data
 
 ```{r}
 # read the data
-CSALT <- read.csv("./CSALT.csv", header= TRUE)
+WSALT <- read.csv("./WSALT.csv", header= TRUE)
 
 library(ggplot2)
 library(plyr)
@@ -28,11 +28,11 @@ We use the slope of `log(RF) ~ Day` during exponential phase as a measure the gr
 
 Subset the data to:
 
-  - the last 5 Transfers
-  - between Days 2 and 6
+  - take Transfers 18-22. All starting at 200 RFU
+  - between Days 2 and 5. One less time point sampled compared to C. cryptica
 
 ```{r}
-last5 <- droplevels(CSALT[which(CSALT$Transfer > 13 & CSALT$trDay > 1 & CSALT$trDay < 7), ])
+last5 <- droplevels(WSALT[which(WSALT$Transfer > 17 & WSALT$Transfer < 23 & WSALT$trDay > 1 & WSALT$trDay < 6), ])
 last5 <- mutate(last5,
                 Strain=factor(Strain),
                 Treatment=factor(Treatment),
@@ -58,7 +58,7 @@ last5 <- mutate(last5,
 ```
 
 
-### Following Wood et al. 1987, JPhyc
+### Following Wood et al. 1987, JPhyc (not run)
 
 - Replicate and Strain are random effects
 - Replicate is nested within Strain and Treatment
@@ -81,9 +81,9 @@ display(SS)
 
 No random effects. Apparently these are difficult to estimate/interpret when the number of levels per factor is small. Here we have 4-5 levels per factor, which apparently is not enough for meaningful among block variance estimation (http://glmm.wikidot.com/faq). It might be possible to use these types of models when I combine the C. cryptica and C. wallercreekii data. We'll have 9 Strains and possibly 10 sequential replicates. For now, use simple `lm` fixed effects model without interactions.
 
-#### For 0 ppt first
+#### For 0 ppt first (not run)
 
-```{r}
+```{r, eval=FALSE}
 last5zero <- droplevels(CSALT[which(CSALT$Treatment == 0 & 
                                       CSALT$Transfer > 13 & 
                                       CSALT$trDay > 1 & 
@@ -175,4 +175,35 @@ broadSenseH
 intBroadSenseH
 ```
 
+### Remove cases where cultures didn't grow
 
+```{r}
+last5clean <- last5[-which(last5$Strain == "168-16" & last5$Treatment == 24 | 
+                           last5$Strain == "168-16" & last5$Treatment == 36 |
+                           last5$Strain == "169-30" & last5$Treatment == 36),]
+# confirm the drop
+table(last5clean$Treatment)
+table(last5clean$Strain)
+```
+
+#### Model with interaction again
+
+```{r}
+clean_noRandEff_all2 <- dlply(.data=last5clean,
+                        .variables=.(Treatment),
+                        .fun=linMod2)
+
+clean_aovTable_all2 <- llply(.data= clean_noRandEff_all2,
+                             .variables=.(Treatment),
+                             .fun=Anova, type=3)
+clean_intBroadSenseH <- ldply(.data=clean_aovTable_all2, .fun=calcHerit2)
+```
+
+#### Compare
+
+With and without the no-growth cases
+
+```{r}
+clean_intBroadSenseH
+intBroadSenseH
+```

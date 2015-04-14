@@ -200,7 +200,7 @@ aovTable</code></pre>
 <pre class="r"><code>MSq &lt;- aovTable[,1] / aovTable[,2] # divide SumSq by d.f to get MeanSq
 H2 &lt;- MSq[3]/sum(MSq[3:6]) # Var_strain / (Var_strain + Var_transfer + Var_replicate + Var_residual)
 Vgen &lt;- MSq[3] # Var_strain
-Venv &lt;- MSq[4] + MSq[5] # Var_strain + Var_replicate
+Venv &lt;- MSq[4] + MSq[5] # Var_transfer + Var_replicate
 Vres &lt;- MSq[6] # Var_residual
 
 data.frame(H2,Vgen,Venv,Vres)</code></pre>
