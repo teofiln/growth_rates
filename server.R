@@ -38,7 +38,7 @@ MUTATE <- function(x) {
                 Date=as.Date(as.character(Date)),
                 Rep=factor(Replicate),
                 Transfer=as.numeric(Transfer), 
-                seqRep=LETTERS[Transfer],
+                seqRep=factor(Transfer),
                 Treatment=factor(Treatment),
                 Temperature=factor(Temperature),
                 Media=factor(Media),
@@ -51,7 +51,7 @@ MUTATE <- function(x) {
 
 # get mean, SD
 # for some of the plots
-meanNsd <- function(x) { c(Mean=mean(x$trDay, na.rm=TRUE), SD=sd(x$trDay, na.rm=TRUE)) }
+# meanNsd <- function(x) { c(Mean=mean(x$trDay, na.rm=TRUE), SD=sd(x$trDay, na.rm=TRUE)) }
 
 shinyServer(function(input, output, session) {
 
@@ -276,11 +276,11 @@ shinyServer(function(input, output, session) {
   whichExperiment1 <- reactive({
     DF <- switch(input$Experiment1,
                  "1" = WSALT,
-                 "2" = WTEMP,
-                 "3" = CSALT,
-                 "4" = WFLAS,
-                 "5" = WFLAS2,
-                 "6" = CFLAS)
+                 "2" = WFLAS,
+                 "3" = WFLAS2,
+                 "4" = CSALT,
+                 "5" = CFLAS,
+                 "6" = WTEMP)
     return(DF)
   })
 
@@ -369,7 +369,75 @@ shinyServer(function(input, output, session) {
   ##############################################
   ##          end growth curves tab           ##
   ##############################################
+  
+  ########################################
+  ##     start compare rates tab        ##
+  ########################################
+
+  # assign dataset to plot
+  # based on selected experiment
+  whichExperiment10 <- reactive({
+    DF <- switch(input$Experiment10,
+                 "1" = WSALTslopes,
+                 "2" = CSALTslopes)
+    return(DF)
+  })
+
+  # create conditional panel
+  # for subseting an experiment
+  output$whichSelectInput10 <- renderUI({
+    DF <- whichExperiment10()
+    out <-  div(id = "PlotControls10", class = "collapse", 
+                wellPanel(
+                  checkboxGroupInput(inputId = "chooseStrain10", label = h5("Strain"), inline = TRUE,
+                                     choices = levels(DF$Strain),
+                                     selected = levels(DF$Strain)[1:5]),
+                  checkboxGroupInput(inputId = "chooseTreatment10", label = h5("Treatment"), inline = TRUE,
+                                     choices = levels(DF$Treatment),
+                                     selected = levels(DF$Treatment)[1:5]),
+                  sliderInput(inputId = "Transfer10", label = h5("Transfer Range"), 
+                              min = min(as.numeric(DF$seqRep)), 
+                              max = max(as.numeric(DF$seqRep)), 
+                              value = c(max(as.numeric(DF$seqRep))-4, 
+                                        max(as.numeric(DF$seqRep))), 
+                              ticks=TRUE)
+                ) # end wellPanel
+    ) # end collapsable div
+    return(out)
+  })
+  
+  # subset the data based on choice of
+  # strain, treatment and transfer range
+  # in conditional panels
+  whichSubset10 <- reactive({
+    if (is.null(whichExperiment10()))
+      return(NULL)
     
+    DF <- isolate( whichExperiment10() )
+    DF <- DF[which(DF$Strain %in% input$chooseStrain10 & DF$Treatment %in% input$chooseTreatment10), ]
+    DF <- DF[which(as.numeric(DF$seqRep) >= input$Transfer10[1] & as.numeric(DF$seqRep) <= input$Transfer10[2]), ]
+    return(DF)
+  }) 
+  
+  # plot the subset as RF by Day
+  pl10 <- reactive ({
+    DF <- whichSubset10()
+    ENV <- environment()
+    barSlope <- ggplot(data=DF, environment = ENV, aes(y=trDay, x=seqRep)) +
+                  geom_bar(stat="identity", fill="steelblue", width=0.7) +
+                  xlab("Transfer") + ylab("Growth rate") +
+                  facet_grid(Strain ~ Treatment) +
+                  theme_bw()
+    return(barSlope)
+  })
+  
+  # render 
+  output$Plot10 <- renderPlot({ pl10() })
+
+  ########################################
+  ##     end compare rates tab          ##
+  ########################################
+
   output$textAbout <- renderUI({
     HTML("<p>Tool to view and calculate growth rates.</p>")
   })

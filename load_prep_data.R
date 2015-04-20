@@ -17,9 +17,9 @@ Cflas <- read.csv("./CFLAS.csv", header=TRUE)
 MUTATE <- function(x) { mutate(.data=x,
                                 Date = as.Date(as.character(Date)),
                                 Rep=factor(Replicate),
-                                #seqRep=factor(Transfer),
                                 Transfer=as.numeric(Transfer),
-                                seqRep=factor(LETTERS[Transfer]),
+                                seqRep=factor(Transfer),
+                                #seqRep=factor(LETTERS[Transfer]),
                                 Treatment=factor(Treatment),
                                 Temperature=factor(Temperature),
                                 Media=factor(Media),
@@ -31,7 +31,7 @@ MUTATE <- function(x) { mutate(.data=x,
 
 # function to fit an ancova model. 
 # to be used by plyr bellow
-ANCOV <- function(x) { aov(data=x, formula=lnRF ~ trDay*seqRep*Rep, na.action=na.exclude)}
+ANCOV <- function(x) { aov(data=x, formula=lnRF ~ trDay*seqRep, na.action=na.exclude)}
 
 # function to fit linear model retaining only the slope. 
 # to be used by plyr bellow
@@ -77,7 +77,7 @@ for (i in 1:ncol(wtempPredict)) {WTEMPsplit[[i]]$pred <- wtempPredict[,i]}
 
 # ddply getting slope for each case
 slopesTemp <- ddply(.data=WTEMPnoZero, 
-                    .variables=.(Strain, Treatment, seqRep, Rep),
+                    .variables=.(Strain, Treatment, seqRep),
                     .fun=getSlope)
 
 ########################################
@@ -91,7 +91,7 @@ WSALTnoZero <- droplevels(WSALT[- which(WSALT$Transfer < 4), ])
 WSALTnoZero <- droplevels(WSALTnoZero[- which(WSALTnoZero$Hour == 0), ])
 
 # remove Transfer F (start and end data only)
-WSALTnoZero <- droplevels(WSALTnoZero[- which(WSALTnoZero$seqRep == "F"), ])
+WSALTnoZero <- droplevels(WSALTnoZero[- which(WSALTnoZero$seqRep == 6), ])
 
 # ancova for salinity
 wsaltAncovas <- dlply(.data = WSALTnoZero, .variables=.(Strain, Treatment), .fun=ANCOV)
@@ -107,7 +107,7 @@ for (i in 1:ncol(wsaltPredict)) {WSALTsplit[[i]]$pred <- wsaltPredict[,i]}
 
 # ddply getting slope for each case
 slopesSalt <- ddply(.data=WSALTnoZero, 
-                    .variables=.(Strain, Treatment, seqRep, Rep),
+                    .variables=.(Strain, Treatment, seqRep),
                     .fun=getSlope)
 
 ########################################
@@ -134,7 +134,7 @@ for (i in 1:ncol(CSALTPredict)) {CSALTsplit[[i]]$pred <- CSALTPredict[,i]}
 
 # ddply getting slope for each case
 slopesCSalt <- ddply(.data=CSALTnoZero, 
-                     .variables=.(Strain, Treatment, seqRep, Rep),
+                     .variables=.(Strain, Treatment, seqRep),
                      .fun=getSlope, .inform=TRUE)
 
 #############################################################

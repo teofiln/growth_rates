@@ -100,13 +100,13 @@ shinyUI(fluidPage(theme = shinytheme("flatly"),
         sidebarPanel(width = 3,
           radioButtons("Experiment1",
             label = h5("Experiment"),
-            choices = list("C. wallercreekii tubes salinity" = 1, 
-                           "C. wallercreekii tubes temperature" = 2, 
-                           "C. cryptica tubes salinity" = 3, 
-                           "C. wallercreekii flasks salinity" = 4, 
-                           "C. wallercreekii flasks 2 salinity" = 5,
-                           "C. cryptica flasks salinity" = 6),
-            selected = 1),
+            choices = list("C. wallercreekii tubes salinity" = 1,
+                           "C. wallercreekii flasks salinity" = 2,
+                           "C. wallercreekii flasks 2 salinity" = 3,
+                           "C. cryptica tubes salinity" = 4,
+                           "C. cryptica flasks salinity" = 5,
+                           "C. wallercreekii tubes temperature" = 6),
+                      selected = 1),
           HTML("<button type='button' class='btn btn-info' data-toggle='collapse' data-target='#PlotControls'>Customize</button>"),
           uiOutput("whichSelectInput1")
           ), # end sidebarPanel
@@ -115,7 +115,24 @@ shinyUI(fluidPage(theme = shinytheme("flatly"),
         ) # end mainPanel
       ) # end sidebarLayot
     ), # end tab
-            
+  
+  tabPanel("Slopes", value = "tab2",
+    sidebarLayout(fluid = TRUE,
+      sidebarPanel(width = 3,
+        radioButtons("Experiment10",
+          label = h5("Experiment"),
+            choices = list("C. wallercreekii tubes salinity" = 1,
+                           "C. cryptica tubes salinity" = 2),
+                      selected = 1),
+            HTML("<button type='button' class='btn btn-info' data-toggle='collapse' data-target='#PlotControls10'>Customize</button>"),
+            uiOutput("whichSelectInput10")
+            ), # end sidebarPanel
+      mainPanel(width = 9,
+        plotOutput('Plot10', height = 800)
+      ) # end mainPanel
+    ) # end sidebarLayot
+  ), # end tab
+
   tabPanel("Experiments log",
            includeMarkdown(path = "./Experiments_log.Rmd")
            )
