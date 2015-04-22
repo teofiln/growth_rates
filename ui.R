@@ -46,14 +46,15 @@ shinyUI(fluidPage(theme = shinytheme("flatly"),
                         #'text/plain',
                         #'.csv',
                         '.tsv') ),
-             actionButton("clearUpload", label="Clear", class='btn btn-success', icon("trash")),
-             tags$hr(),
              strong("Caution: Clicking 'Submit new data' will add a day's worth of measurements to the dataset. 
                     Make sure the correct file is loaded before commiting the changes."),
              tags$hr(),
              actionButton("submitNewData", "Submit new data", class='btn btn-danger'),
              tags$hr(),
-             h4(textOutput("uploadSubmitted"))
+             h4(textOutput("uploadSubmitted")),
+             strong("Clicking 'Clear' and refreshing the browser will purge the newly uploaded data in case of problems."),
+             tags$hr(),
+             actionButton("clearUpload", label="Clear", class='btn btn-success', icon("trash"))
             ) # end collapsable div
           ), # end wellPanel
         wellPanel(
