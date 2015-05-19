@@ -8,6 +8,11 @@ output:
     toc_depth: 6
 ---
 
+### 2015-05-19
+#### C. cryptica tubes:
+  - Measurements (TN)
+  - Transfer Z (TN)
+
 ### 2015-05-18
 #### C. cryptica tubes:
   - Measurements (TN)
