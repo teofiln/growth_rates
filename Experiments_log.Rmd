@@ -8,7 +8,13 @@ output:
     toc_depth: 6
 ---
 
-### 2015-05-25 onwards
+### 2015-06-07
+#### C. cryptica tubes:
+  - Measurements (KN)
+  - Transfer (KN)
+  - Discontinue daily measurements (TN)
+
+### 2015-05-25 - 2015-06-07
 #### C. cryptica tubes:
   - Measurements & Transfers (KN)
 
